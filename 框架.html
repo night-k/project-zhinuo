@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>云智工业互联平台</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #f5f7fa;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: #262626;
+}
+
+/* ===== 顶部导航 ===== */
+.top-nav {
+  height: 50px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px 0 20px;
+  flex-shrink: 0;
+  z-index: 100;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  position: relative;
+}
+.top-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  overflow: hidden;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #1890ff;
+  white-space: nowrap;
+  margin-right: 14px;
+  letter-spacing: -0.3px;
+}
+.logo i { font-size: 20px; }
+.menu-trigger {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: #595959;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 15px;
+  margin-right: 2px;
+  flex-shrink: 0;
+}
+.menu-trigger:hover { background: #f5f5f5; color: #1890ff; }
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+  overflow: hidden;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 13px;
+  height: 30px;
+  font-size: 13px;
+  color: #595959;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  user-select: none;
+  font-weight: 400;
+}
+.nav-item i { font-size: 14px; opacity: 0.85; }
+.nav-item:hover { color: #1890ff; background: #f0f7ff; }
+.nav-item.active {
+  color: #1890ff;
+  background: #e6f7ff;
+  font-weight: 500;
+}
+.nav-item.active i { opacity: 1; }
+.nav-more-dots {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  color: #8c8c8c;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.nav-more-dots:hover { background: #f5f5f5; color: #1890ff; }
+.user-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.bell-btn {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #1890ff;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+  flex-shrink: 0;
+}
+.bell-btn:hover { transform: scale(1.05); background: #40a9ff; }
+.bell-btn:active { transform: scale(0.96); }
+.bell-dot {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 8px;
+  height: 8px;
+  background: #ff4d4f;
+  border-radius: 50%;
+  border: 1.5px solid #fff;
+}
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #595959;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.user-info:hover { background: #f5f5f5; }
+.user-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #e6f7ff;
+  color: #1890ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.user-info i.fa-chevron-down {
+  font-size: 10px;
+  color: #bfbfbf;
+  margin-left: -2px;
+}
+
+/* ===== 主体区域：左侧边栏 + 右侧内容区 ===== */
+.main-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ===== 左侧边栏（同步人才管理样式） ===== */
+.sidebar-wrap {
+  width: 224px;
+  background: #fff;
+  border-right: 1px solid #f0f0f0;
+  overflow-y: auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 12px;
+}
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: #595959;
+  cursor: pointer;
+  transition: all 0.3s;
+  border-radius: 8px;
+  text-decoration: none;
+  user-select: none;
+  position: relative;
+  margin-bottom: 2px;
+  font-weight: 400;
+}
+.sidebar-item:hover {
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+.sidebar-item.active {
+  background-color: #e6f7ff;
+  color: #1890ff;
+  border-right: 3px solid #1890ff;
+  font-weight: 500;
+}
+.sidebar-item i {
+  width: 20px;
+  text-align: center;
+  font-size: 16px;
+  opacity: 0.85;
+  transition: opacity 0.2s;
+}
+.sidebar-item:hover i,
+.sidebar-item.active i { opacity: 1; }
+
+/* ===== 右侧区域：标签栏 + iframe ===== */
+.right-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 标签栏 */
+.tab-bar {
+  height: 38px;
+  background: #fff;
+  display: flex;
+  align-items: flex-end;
+  padding: 0 10px;
+  gap: 2px;
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+  border-bottom: 1px solid #f0f0f0;
+}
+.tab-scroll {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0;
+  scrollbar-width: none;
+  height: 100%;
+}
+.tab-scroll::-webkit-scrollbar { display: none; }
+
+.tab-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  height: 34px;
+  font-size: 13px;
+  color: #8c8c8c;
+  cursor: pointer;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  position: relative;
+  user-select: none;
+  margin-top: 2px;
+}
+.tab-item:hover {
+  color: #595959;
+  background: #fafafa;
+}
+/* 选中状态：无圆角、无边框、底部蓝线 */
+.tab-item.active {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid #1890ff;
+  color: #1890ff;
+  font-weight: 500;
+  border-radius: 0;
+  z-index: 2;
+}
+/* 选中时关闭按钮始终显示 */
+.tab-item.active .tab-close {
+  opacity: 1;
+  visibility: visible;
+}
+.tab-item.home.active {
+  color: #1890ff;
+  border-bottom-color: #1890ff;
+}
+
+.tab-close {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 9px;
+  margin-left: 4px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.15s ease;
+  color: #bfbfbf;
+  flex-shrink: 0;
+}
+/* 非选中标签hover时显示关闭按钮 */
+.tab-item:hover .tab-close {
+  opacity: 1;
+  visibility: visible;
+}
+/* 选中标签始终显示关闭按钮 */
+.tab-item.active .tab-close {
+  opacity: 1;
+  visibility: visible;
+  color: #8c8c8c;
+}
+.tab-close:hover {
+  background: #ff4d4f;
+  color: #fff;
+}
+
+.tab-arrow {
+  width: 22px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #bfbfbf;
+  flex-shrink: 0;
+  border-radius: 4px;
+  font-size: 11px;
+  transition: all 0.15s;
+  margin-bottom: 2px;
+}
+.tab-arrow:hover {
+  color: #1890ff;
+  background: #f5f5f5;
+}
+
+.tab-more-btn {
+  padding: 0 12px;
+  height: 28px;
+  border-radius: 4px;
+  background: #1890ff;
+  font-size: 12px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  user-select: none;
+  margin-bottom: 2px;
+  border: none;
+  font-weight: 500;
+}
+.tab-more-btn:hover {
+  background: #40a9ff;
+  box-shadow: 0 2px 6px rgba(24,144,255,0.25);
+}
+.tab-more-btn i { font-size: 10px; }
+
+/* iframe */
+.iframe-box {
+  flex: 1;
+  position: relative;
+  background: #f5f7fa;
+  overflow: hidden;
+}
+.iframe-box iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+/* ===== 右键菜单 ===== */
+.ctx-menu {
+  position: fixed;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  padding: 5px 0;
+  min-width: 150px;
+  z-index: 9999;
+  display: none;
+  font-size: 13px;
+  animation: ctxIn 0.12s ease;
+}
+@keyframes ctxIn {
+  from { opacity: 0; transform: scale(0.96) translateY(-2px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.ctx-menu .ctx-item {
+  padding: 8px 14px;
+  cursor: pointer;
+  color: #595959;
+  transition: all 0.12s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+.ctx-menu .ctx-item:hover {
+  background: #f0f7ff;
+  color: #1890ff;
+}
+.ctx-menu .ctx-divider {
+  height: 1px;
+  background: #f0f0f0;
+  margin: 4px 10px;
+}
+</style>
+</head>
+<body>
+
+<!-- 顶部主导航 -->
+<header class="top-nav">
+  <div class="top-nav-left">
+    <div class="logo">
+      <i class="fas fa-cloud"></i>
+      <span>云智工业互联平台</span>
+    </div>
+    <div class="menu-trigger"><i class="fas fa-bars"></i></div>
+    <nav class="nav-menu" id="topNavMenu">
+      <div class="nav-item" data-module="home"><i class="fas fa-home"></i>首页</div>
+      <div class="nav-item" data-module="workbench"><i class="fas fa-desktop"></i>工作台</div>
+      <div class="nav-item" data-module="process"><i class="fas fa-project-diagram"></i>流程管理</div>
+      <div class="nav-item" data-module="product"><i class="fas fa-cogs"></i>产品工艺</div>
+      <div class="nav-item" data-module="sale"><i class="fas fa-shopping-cart"></i>销售管理</div>
+      <div class="nav-item" data-module="project"><i class="fas fa-tasks"></i>项目管理</div>
+      <div class="nav-item active" data-module="hr"><i class="fas fa-users"></i>人力资源</div>
+      <div class="nav-item" data-module="inventory"><i class="fas fa-warehouse"></i>库存管理</div>
+    </nav>
+    <div class="nav-more-dots"><i class="fas fa-ellipsis-h"></i></div>
+  </div>
+  <div class="user-area">
+    <div class="bell-btn" onclick="openNotify()">
+      <i class="fas fa-bell" style="font-size:13px"></i>
+      <span class="bell-dot"></span>
+    </div>
+    <div class="user-info">
+      <div class="user-avatar"><i class="fas fa-user"></i></div>
+      <span>admin-admin</span>
+      <i class="fas fa-chevron-down"></i>
+    </div>
+  </div>
+</header>
+
+<!-- 主体：左侧边栏 + 右侧内容区 -->
+<div class="main-body">
+  <!-- 左侧边栏（独立菜单，同步人才管理样式） -->
+  <aside class="sidebar-wrap" id="sidebar">
+    <a class="sidebar-item" data-page="人才管理" onclick="openPage('人才管理', '人才管理.html')">
+      <i class="fas fa-users"></i><span>人才管理</span>
+    </a>
+    <a class="sidebar-item" data-page="人员画像" onclick="openPage('人员画像', '人员画像.html')">
+      <i class="fas fa-user-circle"></i><span>人员画像</span>
+    </a>
+    <a class="sidebar-item" data-page="人才评分规则" onclick="openPage('人才评分规则', '人才评分规则.html')">
+      <i class="fas fa-star"></i><span>人才评分规则</span>
+    </a>
+    <a class="sidebar-item" data-page="培训记录" onclick="openPage('培训记录', '培训记录.html')">
+      <i class="fas fa-chalkboard-teacher"></i><span>培训记录</span>
+    </a>
+    <a class="sidebar-item active" data-page="证书管理" onclick="openPage('证书管理', '证书管理.html')">
+      <i class="fas fa-certificate"></i><span>证书管理</span>
+    </a>
+  </aside>
+
+  <!-- 右侧区域：标签栏 + iframe -->
+  <div class="right-area">
+    <!-- 标签栏 -->
+    <div class="tab-bar" id="tabBar">
+      <div class="tab-arrow" onclick="scrollTabs(-1)"><i class="fas fa-chevron-left"></i></div>
+      <div class="tab-scroll" id="tabList"></div>
+      <div class="tab-arrow" onclick="scrollTabs(1)"><i class="fas fa-chevron-right"></i></div>
+      <div class="tab-more-btn" onclick="showMoreMenu(event)">
+        <span>更多</span>
+        <i class="fas fa-chevron-down"></i>
+      </div>
+    </div>
+    <!-- iframe 内容区 -->
+    <div class="iframe-box">
+      <iframe id="contentFrame" name="contentFrame" src="首页.html"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- 标签右键菜单 -->
+<div class="ctx-menu" id="tabCtxMenu">
+  <div class="ctx-item" onclick="ctxCloseCurrent()"><i class="fas fa-times" style="font-size:11px;width:14px;text-align:center"></i>关闭当前</div>
+  <div class="ctx-item" onclick="ctxCloseOthers()"><i class="fas fa-compress-alt" style="font-size:11px;width:14px;text-align:center"></i>关闭其他</div>
+  <div class="ctx-divider"></div>
+  <div class="ctx-item" onclick="ctxCloseAll()"><i class="fas fa-trash-alt" style="font-size:11px;width:14px;text-align:center"></i>关闭所有</div>
+</div>
+
+<!-- 更多下拉菜单 -->
+<div class="ctx-menu" id="moreMenu" style="min-width:130px">
+  <div class="ctx-item" onclick="closeAllTabs()"><i class="fas fa-trash-alt" style="font-size:11px;width:14px;text-align:center"></i>关闭所有标签</div>
+</div>
+
+<script>
+let tabs = [{name: '首页', src: '首页.html', fixed: true}];
+let currentTab = '首页';
+let ctxTarget = null;
+
+function openPage(name, src) {
+  const exist = tabs.find(t => t.name === name);
+  if (exist) { exist.src = src; activateTab(name); return; }
+  tabs.push({name, src, fixed: false});
+  renderTabs();
+  activateTab(name);
+}
+
+function switchTab(el) {
+  activateTab(el.dataset.page);
+}
+
+function activateTab(name) {
+  currentTab = name;
+  const tab = tabs.find(t => t.name === name);
+  if (!tab) return;
+  document.getElementById('contentFrame').src = tab.src;
+  document.querySelectorAll('.tab-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.page === name);
+  });
+  document.querySelectorAll('.sidebar-item').forEach(item => {
+    item.classList.toggle('active', item.dataset.page === name);
+  });
+  document.querySelectorAll('.nav-item').forEach(item => {
+    const mod = item.dataset.module;
+    if (name === '首页') item.classList.toggle('active', mod === 'home');
+    else if (['人才管理','人员画像','人才评分规则','培训记录','证书管理'].includes(name))
+      item.classList.toggle('active', mod === 'hr');
+  });
+  updateHash(name, tab.src);
+}
+
+function closeTab(name, e) {
+  if (e) e.stopPropagation();
+  const idx = tabs.findIndex(t => t.name === name);
+  if (idx === -1) return;
+  if (tabs[idx].fixed) return;
+  tabs.splice(idx, 1);
+  renderTabs();
+  if (currentTab === name) {
+    const newIdx = Math.min(idx, tabs.length - 1);
+    activateTab(tabs[newIdx].name);
+  }
+}
+
+function closeAllTabs() {
+  tabs = tabs.filter(t => t.fixed);
+  renderTabs();
+  hideMenus();
+  activateTab('首页');
+}
+
+function closeOthers(keepName) {
+  tabs = tabs.filter(t => t.fixed || t.name === keepName);
+  renderTabs();
+  if (!tabs.find(t => t.name === currentTab)) activateTab(keepName);
+}
+
+function renderTabs() {
+  const box = document.getElementById('tabList');
+  box.innerHTML = tabs.map(tab => {
+    const active = tab.name === currentTab;
+    const closeBtn = tab.fixed ? '' : `<span class="tab-close" onclick="closeTab('${tab.name}',event)"><i class="fas fa-times"></i></span>`;
+    return `
+      <div class="tab-item ${active ? 'active' : ''} ${tab.fixed ? 'home' : ''}"
+           data-page="${tab.name}" data-src="${tab.src}"
+           onclick="switchTab(this)"
+           oncontextmenu="showCtxMenu(event,'${tab.name}')">
+        ${tab.fixed ? '<i class="fas fa-home" style="font-size:11px;opacity:0.7"></i>' : ''}
+        <span>${tab.name}</span>
+        ${closeBtn}
+      </div>`;
+  }).join('');
+}
+
+function scrollTabs(dir) {
+  document.getElementById('tabList').scrollBy({left: dir * 200, behavior: 'smooth'});
+}
+
+/* 右键菜单 */
+function showCtxMenu(e, name) {
+  e.preventDefault();
+  e.stopPropagation();
+  ctxTarget = name;
+  const menu = document.getElementById('tabCtxMenu');
+  let x = e.clientX, y = e.clientY;
+  const mw = 160, mh = 130;
+  if (x + mw > window.innerWidth) x = window.innerWidth - mw - 8;
+  if (y + mh > window.innerHeight) y = window.innerHeight - mh - 8;
+  menu.style.left = x + 'px';
+  menu.style.top = y + 'px';
+  menu.style.display = 'block';
+  hideMoreMenu();
+}
+function hideCtxMenu() { document.getElementById('tabCtxMenu').style.display = 'none'; ctxTarget = null; }
+function ctxCloseCurrent() { if (ctxTarget) closeTab(ctxTarget); hideCtxMenu(); }
+function ctxCloseOthers() { if (ctxTarget) closeOthers(ctxTarget); hideCtxMenu(); }
+function ctxCloseAll() { closeAllTabs(); hideCtxMenu(); }
+
+/* 更多菜单 */
+function showMoreMenu(e) {
+  e.stopPropagation();
+  const menu = document.getElementById('moreMenu');
+  const btn = e.currentTarget;
+  const rect = btn.getBoundingClientRect();
+  menu.style.left = (rect.left - 20) + 'px';
+  menu.style.top = (rect.bottom + 4) + 'px';
+  menu.style.display = 'block';
+  hideCtxMenu();
+}
+function hideMoreMenu() { document.getElementById('moreMenu').style.display = 'none'; }
+function hideMenus() { hideCtxMenu(); hideMoreMenu(); }
+
+document.addEventListener('click', function(e) {
+  if (!document.getElementById('tabCtxMenu').contains(e.target)) hideCtxMenu();
+  if (!document.getElementById('moreMenu').contains(e.target)) hideMoreMenu();
+});
+
+function updateHash(name, src) {
+  const hash = `#page=${encodeURIComponent(name)}&src=${encodeURIComponent(src)}`;
+  if (window.location.hash !== hash) history.replaceState(null, '', hash);
+}
+function restoreFromHash() {
+  const hash = window.location.hash;
+  if (!hash) return;
+  const p = new URLSearchParams(hash.replace('#', ''));
+  const page = p.get('page'), src = p.get('src');
+  if (page && src) {
+    if (!tabs.find(t => t.name === page)) tabs.push({name: page, src, fixed: false});
+    renderTabs();
+    activateTab(page);
+  }
+}
+function openNotify() { openPage('消息通知', '通知中心.html'); }
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderTabs();
+  restoreFromHash();
+  if (!window.location.hash) openPage('证书管理', '证书管理.html');
+});
+</script>
+</body>
+</html>

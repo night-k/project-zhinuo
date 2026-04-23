@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三车间MES生产执行流程图 - 主流程+车间细节</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1440px; margin: 0 auto; }
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            color: white;
+        }
+        .header h1 { font-size: 2em; margin-bottom: 8px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .header p { font-size: 1em; opacity: 0.9; }
+        .flow-container {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .section-title {
+            font-size: 1.4em;
+            color: #333;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 3px solid #667eea;
+            display: inline-block;
+        }
+
+        /* 核心链路 */
+        .core-chain {
+            background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+            border: 1px solid #86efac;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 18px;
+        }
+        .core-title { font-size: 13px; font-weight: 700; color: #166534; margin-bottom: 8px; }
+        .core-flow {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+        }
+        .core-item {
+            background: #fff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid #86efac;
+            font-weight: 500;
+            color: #1f2937;
+            white-space: nowrap;
+        }
+        .core-arrow { color: #16a34a; font-weight: 700; }
+
+        /* 阶段卡片 */
+        .phase-card {
+            background: #fff;
+            border-radius: 12px;
+            margin: 14px 0;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .phase-header {
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .ph-erp { background: linear-gradient(90deg, #4f46e5, #6366f1); }
+        .ph-mes { background: linear-gradient(90deg, #2563eb, #3b82f6); }
+        .ph-workshop { background: linear-gradient(90deg, #0891b2, #06b6d4); }
+        .ph-pda { background: linear-gradient(90deg, #16a34a, #22c55e); }
+        .ph-back { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+
+        .phase-body {
+            padding: 16px 20px;
+            background: #fafbfc;
+        }
+
+        .flow-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .flow-row:last-child { margin-bottom: 0; }
+
+        .flow-box {
+            padding: 10px 14px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            font-size: 12px;
+            line-height: 1.5;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            transition: all 0.2s;
+            min-width: 95px;
+            position: relative;
+        }
+        .flow-box:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+
+        /* 颜色 */
+        .bx-erp {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            color: #312e81; border: 1.5px solid #818cf8;
+        }
+        .bx-mes {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e3a8a; border: 1.5px solid #60a5fa;
+        }
+        .bx-pda {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+            color: #14532d; border: 1.5px solid #4ade80;
+        }
+        .bx-decision {
+            background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+            color: #7c2d12; border: 1.5px solid #fb923c;
+            border-radius: 24px; padding: 8px 16px;
+        }
+        .bx-sub {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            color: #374151; border: 1.5px dashed #9ca3af;
+            font-size: 11px;
+        }
+        .bx-interface {
+            background: linear-gradient(135deg, #f5f3ff 0%, #e9d5ff 100%);
+            color: #5b21b6; border: 1.5px solid #a78bfa;
+        }
+        .bx-fentiao {
+            background: linear-gradient(135deg, #cffafe 0%, #a5f3fc 100%);
+            color: #164e63; border: 1.5px solid #22d3ee;
+        }
+        .bx-chongya {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #78350f; border: 1.5px solid #fbbf24;
+        }
+        .bx-zuzhuang {
+            background: linear-gradient(135deg, #ffe4e6 0%, #fecdd3 100%);
+            color: #881337; border: 1.5px solid #fb7185;
+        }
+        .bx-warning {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b; border: 1.5px solid #f87171;
+        }
+
+        .arrow { font-size: 18px; color: #94a3b8; font-weight: 700; }
+        .arrow-down { text-align: center; margin: 4px 0; color: #94a3b8; font-size: 18px; }
+
+        .branch-wrap {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 8px 0;
+        }
+        .branch-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .branch-label {
+            background: #e2e8f0;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .note-box {
+            background: #fffbeb;
+            border-left: 3px solid #f59e0b;
+            padding: 10px 14px;
+            margin: 10px 0;
+            border-radius: 6px;
+            color: #92400e;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+        .note-box strong { color: #78350f; }
+
+        /* 车间泳道内嵌 */
+        .workshop-inner {
+            background: #fff;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            padding: 14px;
+            margin: 10px 0;
+        }
+        .workshop-title {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .wt-fentiao { color: #0891b2; }
+        .wt-chongya { color: #d97706; }
+        .wt-zuzhuang { color: #dc2626; }
+
+        .key-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+        .key-card {
+            background: #fff;
+            border: 1px solid #fecaca;
+            border-radius: 10px;
+            padding: 14px;
+        }
+        .key-title { font-size: 13px; font-weight: 700; color: #dc2626; margin-bottom: 6px; }
+        .key-desc { font-size: 12px; color: #4b5563; line-height: 1.6; }
+
+        .legend-bar {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #475569;
+        }
+        .legend-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.5em; }
+            .flow-box { min-width: 80px; padding: 8px 10px; font-size: 11px; }
+            .branch-wrap { flex-direction: column; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏭 三车间MES生产执行流程图</h1>
+            <p>主流程：ERP→MES→工单→任务→PDA报工 | 车间细节：分条→冲压→组装</p>
+        </div>
+
+        <div class="flow-container">
+            <div class="section-title">📋 组合流程：主骨架 + 三车间工序细节</div>
+
+            <!-- 核心链路 -->
+            <div class="core-chain">
+                <div class="core-title">🔥 核心链路（物料+数据流向）</div>
+                <div class="core-flow">
+                    <span class="core-item">ERP计划</span><span class="core-arrow">→</span>
+                    <span class="core-item">MES工单</span><span class="core-arrow">→</span>
+                    <span class="core-item">工单下发</span><span class="core-arrow">→</span>
+                    <span class="core-item">分条车间</span><span class="core-arrow">→</span>
+                    <span class="core-item">冲压车间</span><span class="core-arrow">→</span>
+                    <span class="core-item">组装车间</span><span class="core-arrow">→</span>
+                    <span class="core-item">PDA报工</span><span class="core-arrow">→</span>
+                    <span class="core-item">工序完工</span><span class="core-arrow">→</span>
+                    <span class="core-item">工单完工</span><span class="core-arrow">→</span>
+                    <span class="core-item">回传ERP</span>
+                </div>
+            </div>
+
+            <!-- ========== 阶段1：ERP计划接收 ========== -->
+            <div class="phase-card">
+                <div class="phase-header ph-erp">🖥️ 阶段1：ERP计划接收（接口层）</div>
+                <div class="phase-body">
+                    <div class="flow-row">
+                        <div class="flow-box bx-erp">预测订单<br/><span style="font-size:10px">主计划</span></div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-erp">销售订单</div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-erp">总装生产订单</div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-interface">ERP同步MES</div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-mes">MES接收计划</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 阶段2：MES工单生成 ========== -->
+            <div class="phase-card">
+                <div class="phase-header ph-mes">📋 阶段2：MES工单生成（计划层）</div>
+                <div class="phase-body">
+                    <div class="flow-row">
+                        <div class="flow-box bx-mes">生成生产任务</div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-mes">拆分工单</div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-sub">关联产品BOM</div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-sub">关联工艺路线</div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-mes">工单确认</div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-mes">工单下发</div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-sub">下发至产线/班组</div>
+                    </div>
+                    <div class="note-box">
+                        <strong>说明：</strong>工单按车间拆分，分条工单、冲压工单、总装工单分别关联各自BOM和工艺路线。
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 阶段3：三车间执行（核心） ========== -->
+            <div class="phase-card">
+                <div class="phase-header ph-workshop">🔧 阶段3：三车间执行（MES + PDA现场）</div>
+                <div class="phase-body">
+
+                    <!-- 分条车间 -->
+                    <div class="workshop-inner">
+                        <div class="workshop-title wt-fentiao">🔷 分条车间流程</div>
+                        <div class="flow-row">
+                            <div class="flow-box bx-fentiao">1 采购入库<br/><span style="font-size:10px">母卷入库</span></div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-fentiao">分条指令单</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-fentiao">2 母卷领料单</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-pda">PDA扫码领料</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-pda">分条作业</div>
+                        </div>
+                        <div class="arrow-down">⬇</div>
+                        <div class="flow-row">
+                            <div class="flow-box bx-pda">分条日计报工</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-decision">是否营业？</div>
+                        </div>
+                        <div class="branch-wrap">
+                            <div class="branch-col">
+                                <span class="branch-label">否</span>
+                                <div class="flow-box bx-fentiao">3 分条入库单<br/>分条仓</div>
+                            </div>
+                            <div class="branch-col">
+                                <span class="branch-label">是</span>
+                                <div class="flow-box bx-fentiao">分条入库单<br/>营业仓</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 冲压车间 -->
+                    <div class="workshop-inner">
+                        <div class="workshop-title wt-chongya">🔶 冲压车间流程</div>
+                        <div class="flow-row">
+                            <div class="flow-box bx-mes">冲压排产单</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-mes">MES排产</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-pda">PDA领取任务</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-pda">扫描设备码<br/>点击开始</div>
+                        </div>
+                        <div class="arrow-down">⬇</div>
+                        <div class="flow-row">
+                            <div class="flow-box bx-chongya">冲压</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-chongya">焊接</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-chongya">热处理</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-chongya">油压</div>
+                        </div>
+                        <div class="arrow-down">⬇</div>
+                        <div class="flow-row">
+                            <div class="flow-box bx-pda">每道工序PDA报工</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-pda">工序完工确认</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-chongya">冲压生产完成</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-decision">是否营业？</div>
+                        </div>
+                        <div class="branch-wrap">
+                            <div class="branch-col">
+                                <span class="branch-label">否</span>
+                                <div class="flow-box bx-chongya">5 冲压入库单<br/>分条仓</div>
+                            </div>
+                            <div class="branch-col">
+                                <span class="branch-label">是</span>
+                                <div class="flow-box bx-chongya">冲压入库单<br/>营业仓</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 组装车间 -->
+                    <div class="workshop-inner">
+                        <div class="workshop-title wt-zuzhuang">🔴 组装车间（总装）流程</div>
+                        <div class="flow-row">
+                            <div class="flow-box bx-mes">生产主计划</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-mes">总装排程<br/><span style="font-size:10px">日计划</span></div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-pda">PDA领取任务</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-interface">首道工序开工<br/>自动产生冲压领料单</div>
+                        </div>
+                        <div class="arrow-down">⬇</div>
+                        <div class="flow-row">
+                            <div class="flow-box bx-zuzhuang">磁瓦</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-zuzhuang">贴胶</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-zuzhuang">绕线</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-zuzhuang">打包</div>
+                        </div>
+                        <div class="arrow-down">⬇</div>
+                        <div class="flow-row">
+                            <div class="flow-box bx-interface">各工序产生ERP<br/>工序领料单</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-pda">每道工序PDA报工</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-pda">7 完成生产</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-pda">MES报工质检</div>
+                        </div>
+                        <div class="arrow-down">⬇</div>
+                        <div class="flow-row">
+                            <div class="flow-box bx-interface">质检合格后<br/>产生ERP入库单</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-erp">生产入库单</div>
+                            <span class="arrow">➡</span>
+                            <div class="flow-box bx-erp">销售出库单</div>
+                        </div>
+                    </div>
+
+                    <div class="note-box">
+                        <strong>车间联动规则：</strong>总装首道工序（磁瓦）开工时，系统自动产生冲压领料单，从冲压车间仓库领料。分条料供冲压，冲压件供总装，形成物料拉动。各车间完工后根据"是否营业"分别入分条仓或营业仓。
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 阶段4：PDA报工核心 ========== -->
+            <div class="phase-card">
+                <div class="phase-header ph-pda">📱 阶段4：PDA生产报工（按工序执行）</div>
+                <div class="phase-body">
+                    <div class="flow-row">
+                        <div class="flow-box bx-pda">进入报工界面</div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-decision">选择报工类型</div>
+                    </div>
+                    <div class="branch-wrap">
+                        <div class="branch-col">
+                            <span class="branch-label">过程报工</span>
+                            <div class="flow-box bx-pda">数量报工<br/>完成数量</div>
+                            <div class="flow-box bx-pda" style="margin-top:6px;">批量报工<br/>本批产量</div>
+                            <div class="flow-box bx-pda" style="margin-top:6px;">参数报工<br/>工艺参数</div>
+                        </div>
+                        <div class="branch-col">
+                            <span class="branch-label">质量报工</span>
+                            <div class="flow-box bx-pda">录入合格数</div>
+                            <div class="flow-box bx-pda" style="margin-top:6px;">录入不良数</div>
+                            <div class="flow-box bx-pda" style="margin-top:6px;">选择不良原因</div>
+                        </div>
+                        <div class="branch-col">
+                            <span class="branch-label">状态报工</span>
+                            <div class="flow-box bx-pda">暂停任务</div>
+                            <div class="flow-box bx-pda" style="margin-top:6px;">填写异常原因</div>
+                            <div class="flow-box bx-pda" style="margin-top:6px;">继续任务</div>
+                        </div>
+                    </div>
+                    <div class="note-box">
+                        <strong>报工规则：</strong>每个工序都必须执行报工，不能只对工单报工。报工必须在PDA上按工序维度录入，禁止后台直接修改。
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 阶段5：工序完工 ========== -->
+            <div class="phase-card">
+                <div class="phase-header ph-pda">✅ 阶段5：工序完工 & 自动流转</div>
+                <div class="phase-body">
+                    <div class="flow-row">
+                        <div class="flow-box bx-pda">点击工序完工</div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-mes">更新工序状态=已完成</div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-mes">自动流转下一工序</div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-mes">更新工单进度</div>
+                    </div>
+                    <div class="arrow-down">⬇</div>
+                    <div class="flow-row">
+                        <div class="flow-box bx-decision">所有工序<br/>已完成？</div>
+                    </div>
+                    <div class="branch-wrap">
+                        <div class="branch-col">
+                            <span class="branch-label">否</span>
+                            <div class="flow-box bx-pda">返回任务开始<br/>执行下一工序</div>
+                        </div>
+                        <div class="branch-col">
+                            <span class="branch-label">是</span>
+                            <div class="flow-box bx-mes">工单完工</div>
+                            <div class="flow-box bx-sub" style="margin-top:6px;">汇总完工数量</div>
+                            <div class="flow-box bx-sub" style="margin-top:6px;">汇总不良数量</div>
+                            <div class="flow-box bx-sub" style="margin-top:6px;">汇总工时数据</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 阶段6：数据回传ERP ========== -->
+            <div class="phase-card">
+                <div class="phase-header ph-back">🔄 阶段6：数据回传ERP（接口层）</div>
+                <div class="phase-body">
+                    <div class="flow-row">
+                        <div class="flow-box bx-interface">MES回传ERP</div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-sub">完工数量</div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-sub">不良数量</div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-sub">工时数据</div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-erp">ERP接收完工数据</div>
+                        <span class="arrow">➡</span>
+                        <div class="flow-box bx-erp">更新库存/成本</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== 关键点 ========== -->
+            <div style="margin-top: 20px;">
+                <div style="font-size: 15px; font-weight: 700; color: #dc2626; margin-bottom: 12px;">⚠️ 关键控制点（防做错）</div>
+                <div class="key-grid">
+                    <div class="key-card">
+                        <div class="key-title">❌ 工单 vs 任务必须区分</div>
+                        <div class="key-desc">工单是管理单元（系统层），任务是执行动作（人领的）。一个工单可拆分为多个任务，由现场人员领取执行。</div>
+                    </div>
+                    <div class="key-card">
+                        <div class="key-title">⚡ 报工必须绑定工序</div>
+                        <div class="key-desc">不能只对工单报工，每个工序独立报工。过程/质量/状态报工均需在PDA上按工序维度录入。</div>
+                    </div>
+                    <div class="key-card">
+                        <div class="key-title">📱 状态变更必须走PDA</div>
+                        <div class="key-desc">任务领取、开始、报工、完工必须通过PDA操作，禁止后台直接修改，确保数据真实可追溯。</div>
+                    </div>
+                    <div class="key-card">
+                        <div class="key-title">🏭 跨车间领料联动</div>
+                        <div class="key-desc">总装首道工序开工时，系统自动产生冲压领料单，从冲压车间仓库领料。分条料供冲压，冲压件供总装。</div>
+                    </div>
+                    <div class="key-card">
+                        <div class="key-title">📦 库存单据扫码确认</div>
+                        <div class="key-desc">所有领料单、入库单必须通过PDA扫码方式完成最终确认。工序若变更，不能变更料号。</div>
+                    </div>
+                    <div class="key-card">
+                        <div class="key-title">🔧 工序变更不更料号</div>
+                        <div class="key-desc">工序若发生变更，不能变更料号。汇报必须严格按工序计划生产数量进行，确保BOM与工艺路线一致。</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 图例 -->
+            <div class="legend-bar">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: linear-gradient(135deg, #e0e7ff, #c7d2fe); border: 1.5px solid #818cf8;"></div>
+                    <span>ERP单据/操作</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); border: 1.5px solid #60a5fa;"></div>
+                    <span>MES计划/系统</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0); border: 1.5px solid #4ade80;"></div>
+                    <span>PDA现场操作</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: linear-gradient(135deg, #cffafe, #a5f3fc); border: 1.5px solid #22d3ee;"></div>
+                    <span>分条车间工序</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: linear-gradient(135deg, #fef3c7, #fde68a); border: 1.5px solid #fbbf24;"></div>
+                    <span>冲压车间工序</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: linear-gradient(135deg, #ffe4e6, #fecdd3); border: 1.5px solid #fb7185;"></div>
+                    <span>组装车间工序</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: linear-gradient(135deg, #f5f3ff, #e9d5ff); border: 1.5px solid #a78bfa;"></div>
+                    <span>系统接口同步</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
