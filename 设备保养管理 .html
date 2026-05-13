@@ -17,10 +17,9 @@ body {
   line-height: 1.5;
 }
 
-.page-header { padding: 0 24px 16px; }
-.page-header h1 { font-size: 18px; font-weight: 600; color: #262626; }
-.breadcrumb { font-size: 12px; color: #8c8c8c; margin-top: 4px; }
-.breadcrumb i { font-size: 10px; margin: 0 6px; color: #bfbfbf; }
+.page-header {
+  height: 24px; padding: 0 24px 16px;
+}
 
 .stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 0 24px 20px; }
 .stat-card { background: #fff; border-radius: 8px; padding: 20px; display: flex; align-items: center; gap: 16px; border: 1px solid #f0f0f0; transition: all 0.3s; cursor: pointer; }
@@ -194,10 +193,7 @@ body {
 </head>
 <body>
 
-<div class="page-header">
-  <h1><i class="fas fa-clipboard-check" style="color:#1890ff;margin-right:10px;"></i>设备保养管理</h1>
-  <div class="breadcrumb">设备管理 <i class="fas fa-chevron-right"></i> 保养工单</div>
-</div>
+<div class="page-header"></div>
 
 <div class="stat-cards">
   <div class="stat-card" data-status="reported" onclick="filterByStatus('reported')">
@@ -686,7 +682,7 @@ function renderTable() {
     const cancelCell = r.cancelReason ? '<span style="color:#f5222d;font-size:12px" title="' + r.cancelReason + '">' + (r.cancelReason.length > 12 ? r.cancelReason.substring(0,12) + '...' : r.cancelReason) + '</span>' : '<span style="color:#bfbfbf">-</span>';
     let actions = '';
     if (r.status === 'reported') {
-      actions = '<span class="operate-btn" onclick="openAssign(\'' + r.id + '\')"><i class="fas fa-user-plus"></i>指派</span><span class="operate-btn" onclick="openDetail(\'' + r.id + '\')"><i class="fas fa-eye"></i>查看</span>';
+      actions = '<span class="operate-btn" onclick="openAssign(\'' + r.id + '\')"><i class="fas fa-user-plus"></i>指派</span><span class="operate-btn operate-btn-success" onclick="selfAccept(\'' + r.id + '\')"><i class="fas fa-hand-paper"></i>接单</span><span class="operate-btn" onclick="openDetail(\'' + r.id + '\')"><i class="fas fa-eye"></i>查看</span>';
     } else if (r.status === 'accepted') {
       actions = '<span class="operate-btn operate-btn-warning" onclick="startRepair(\'' + r.id + '\')"><i class="fas fa-play"></i>开始</span><span class="operate-btn" onclick="openDetail(\'' + r.id + '\')"><i class="fas fa-eye"></i>查看</span>';
     } else if (r.status === 'started') {
@@ -788,6 +784,21 @@ function submitNew() {
   const id='BY'+now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'-'+String(Math.floor(Math.random()*900)+100).padStart(3,'0');
   records.unshift({id,planName,deviceCode:dev.code,deviceName:dev.name,deviceModel:dev.model,workshop:dev.workshop,urgency:document.getElementById('newUrgency').value,status:'reported',reporter:document.getElementById('newReporter').value,reportTime:nowStr(),assignee:null,assignTime:null,startTime:null,completeTime:null,closeTime:null,planStart:planStart.replace('T',' '),planEnd:planEnd.replace('T',' '),cancelPerson:null,cancelTime:null,cancelReason:'',items,remark:document.getElementById('newRemark').value.trim()});
   closeModal('newModal'); updateStats(); applyFilter(); showToast('保养计划已创建');
+}
+
+// ===== 自行接单 =====
+function selfAccept(id) {
+  currentId = id;
+  const r = records.find(x => x.id === id);
+  showConfirm('确认接单', '您确定要接单处理设备「' + r.deviceName + '」的保养任务吗？接单后状态将变为「已接单」。', 'fa-hand-paper', '#1890ff', doSelfAccept);
+}
+function doSelfAccept() {
+  const r = records.find(x => x.id === currentId);
+  if (r) {
+    r.assignee = 'admin'; r.assignTime = nowStr(); r.status = 'accepted';
+    closeModal('confirmModal'); updateStats(); applyFilter();
+    showToast('接单成功，请尽快安排保养');
+  }
 }
 
 // ===== 指派 =====

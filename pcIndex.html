@@ -442,10 +442,8 @@ body {
     </div>
     <div class="menu-trigger"><i class="fas fa-bars"></i></div>
     <nav class="nav-menu" id="topNavMenu">
-      <div class="nav-item active" data-module="production"><i class="fas fa-industry"></i>生产管理</div>
-      <div class="nav-item" data-module="equipment"><i class="fas fa-cogs"></i>设备管理</div>
+      <div class="nav-item active" data-module="equipment"><i class="fas fa-cogs"></i>设备管理</div>
       <div class="nav-item" data-module="mold"><i class="fas fa-shapes"></i>模具管理</div>
-      <div class="nav-item" data-module="warehouse"><i class="fas fa-warehouse"></i>仓库管理</div>
     </nav>
     <div class="nav-more-dots"><i class="fas fa-ellipsis-h"></i></div>
   </div>
@@ -464,22 +462,19 @@ body {
 
 <!-- 主体：左侧边栏 + 右侧内容区 -->
 <div class="main-body">
-  <!-- 左侧边栏（独立菜单，同步人才管理样式） -->
+  <!-- 左侧边栏 -->
   <aside class="sidebar-wrap" id="sidebar">
-    <a class="sidebar-item" data-page="设备台账" onclick="openPage('设备台账', '设备台账.html')">
-      <i class="fas fa-list-alt"></i><span>设备台账</span>
-    </a>
-    <a class="sidebar-item active" data-page="设备维修" onclick="openPage('设备维修', '设备维修管理.html')">
+    <a class="sidebar-item" data-page="设备维修" onclick="openPage('设备维修', '设备维修管理.html')">
       <i class="fas fa-wrench"></i><span>设备维修</span>
     </a>
-    <a class="sidebar-item" data-page="设备保养" onclick="openPage('设备保养', '设备保养.html')">
+    <a class="sidebar-item" data-page="设备保养" onclick="openPage('设备保养', '设备保养管理 .html')">
       <i class="fas fa-oil-can"></i><span>设备保养</span>
     </a>
-    <a class="sidebar-item" data-page="设备点检" onclick="openPage('设备点检', '设备点检.html')">
-      <i class="fas fa-clipboard-check"></i><span>设备点检</span>
+    <a class="sidebar-item" data-page="模具维修" onclick="openPage('模具维修', '模具维修管理.html')">
+      <i class="fas fa-tools"></i><span>模具维修</span>
     </a>
-    <a class="sidebar-item" data-page="设备报废" onclick="openPage('设备报废', '设备报废.html')">
-      <i class="fas fa-trash-alt"></i><span>设备报废</span>
+    <a class="sidebar-item" data-page="模具保养" onclick="openPage('模具保养', '模具保养管理.html')">
+      <i class="fas fa-shield-alt"></i><span>模具保养</span>
     </a>
   </aside>
 
@@ -497,7 +492,7 @@ body {
     </div>
     <!-- iframe 内容区 -->
     <div class="iframe-box">
-      <iframe id="contentFrame" name="contentFrame" src="首页.html"></iframe>
+      <iframe id="contentFrame" name="contentFrame" src="设备维修管理.html"></iframe>
     </div>
   </div>
 </div>
@@ -516,8 +511,8 @@ body {
 </div>
 
 <script>
-let tabs = [{name: '首页', src: '首页.html', fixed: true}];
-let currentTab = '首页';
+let tabs = [{name: '设备维修', src: '设备维修管理.html', fixed: true}];
+let currentTab = '设备维修';
 let ctxTarget = null;
 
 function openPage(name, src) {
@@ -545,9 +540,10 @@ function activateTab(name) {
   });
   document.querySelectorAll('.nav-item').forEach(item => {
     const mod = item.dataset.module;
-    if (name === '首页') item.classList.toggle('active', mod === 'home');
-    else if (['设备台账','设备维修','设备保养','设备点检','设备报废'].includes(name))
+    if (['设备维修','设备保养'].includes(name))
       item.classList.toggle('active', mod === 'equipment');
+    else if (['模具维修','模具保养'].includes(name))
+      item.classList.toggle('active', mod === 'mold');
   });
   updateHash(name, tab.src);
 }
@@ -569,7 +565,7 @@ function closeAllTabs() {
   tabs = tabs.filter(t => t.fixed);
   renderTabs();
   hideMenus();
-  activateTab('首页');
+  activateTab(tabs[0].name);
 }
 
 function closeOthers(keepName) {
@@ -653,12 +649,11 @@ function restoreFromHash() {
     activateTab(page);
   }
 }
-function openNotify() { openPage('消息通知', '通知中心.html'); }
+function openNotify() { alert('暂无新通知'); }
 
 document.addEventListener('DOMContentLoaded', () => {
   renderTabs();
   restoreFromHash();
-  if (!window.location.hash) openPage('设备维修', '设备维修管理.html');
 });
 </script>
 </body>

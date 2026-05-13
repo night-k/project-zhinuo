@@ -17,23 +17,13 @@ body {
   line-height: 1.5;
 }
 
-/* ===== 页面标题 ===== */
+/* ===== 页面标题占位 ===== */
 .page-header {
+  height: 24px;
   padding: 0 24px 16px;
 }
-.page-header h1 {
-  font-size: 18px;
-  font-weight: 600;
-  color: #262626;
-}
-.breadcrumb {
-  font-size: 12px;
-  color: #8c8c8c;
-  margin-top: 4px;
-}
-.breadcrumb i { font-size: 10px; margin: 0 6px; color: #bfbfbf; }
 
-/* ===== 统计卡片 ===== */
+/* ===== 统计卡片（与设备保养管理视觉一致） ===== */
 .stat-cards {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -59,10 +49,16 @@ body {
   box-shadow: 0 0 0 2px rgba(24,144,255,0.08);
 }
 .stat-icon {
-  width: 48px; height: 48px; border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 22px; flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
 }
+.stat-icon i { line-height: 1; }
 .stat-icon.blue { background: #e6f7ff; color: #1890ff; }
 .stat-icon.orange { background: #fff7e6; color: #fa8c16; }
 .stat-icon.green { background: #f6ffed; color: #52c41a; }
@@ -544,41 +540,26 @@ body {
 </head>
 <body>
 
-<!-- 页面标题 -->
-<div class="page-header">
-  <h1><i class="fas fa-cube" style="color:#1890ff;margin-right:10px;"></i>模具保养管理</h1>
-  <div class="breadcrumb">模具管理 <i class="fas fa-chevron-right"></i> 保养工单</div>
-</div>
+<!-- 页面标题占位 -->
+<div class="page-header"></div>
 
 <!-- 统计卡片 -->
 <div class="stat-cards" id="statCards">
   <div class="stat-card" data-status="reported" onclick="filterByStatus('reported')">
     <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
-    <div class="stat-content">
-      <div class="stat-title">待执行</div>
-      <div class="stat-value" id="statReported">0</div>
-    </div>
+    <div class="stat-content"><div class="stat-title">待接单</div><div class="stat-value" id="statReported">0</div></div>
   </div>
-  <div class="stat-card" data-status="started" onclick="filterByStatus('started')">
-    <div class="stat-icon blue"><i class="fas fa-wrench"></i></div>
-    <div class="stat-content">
-      <div class="stat-title">执行中</div>
-      <div class="stat-value" id="statRepairing">0</div>
-    </div>
+  <div class="stat-card" data-status="repairing" onclick="filterByStatus('repairing')">
+    <div class="stat-icon blue"><i class="fas fa-tools"></i></div>
+    <div class="stat-content"><div class="stat-title">保养中</div><div class="stat-value" id="statRepairing">0</div></div>
   </div>
   <div class="stat-card" data-status="completed" onclick="filterByStatus('completed')">
     <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
-    <div class="stat-content">
-      <div class="stat-title">待验收</div>
-      <div class="stat-value" id="statCompleted">0</div>
-    </div>
+    <div class="stat-content"><div class="stat-title">待关闭</div><div class="stat-value" id="statCompleted">0</div></div>
   </div>
   <div class="stat-card" data-status="" onclick="resetFilter()">
     <div class="stat-icon purple"><i class="fas fa-clipboard-list"></i></div>
-    <div class="stat-content">
-      <div class="stat-title">总保养数</div>
-      <div class="stat-value" id="statTotal">0</div>
-    </div>
+    <div class="stat-content"><div class="stat-title">总保养数</div><div class="stat-value" id="statTotal">0</div></div>
   </div>
 </div>
 
@@ -589,10 +570,11 @@ body {
       <label>状态</label>
       <select id="filterStatus">
         <option value="">全部状态</option>
-        <option value="reported">待执行</option>
-        <option value="started">执行中</option>
-        <option value="completed">待验收</option>
-        <option value="closed">已完成</option>
+        <option value="reported">待接单</option>
+        <option value="accepted">已接单</option>
+        <option value="started">保养中</option>
+        <option value="completed">待关闭</option>
+        <option value="closed">已关闭</option>
         <option value="cancelled">已取消</option>
       </select>
     </div>
@@ -649,7 +631,7 @@ body {
         <th style="width:90px">保养负责人</th>
         <th style="width:90px">创建时间</th>
         <th style="width:80px">响应时长</th>
-        <th style="width:80px">执行时长</th>
+        <th style="width:80px">保养时长</th>
         <th style="width:80px">关闭时长</th>
         <th style="width:80px">取消人</th>
         <th style="width:90px">取消时间</th>
@@ -799,31 +781,6 @@ body {
   </div>
 </div>
 
-<!-- ===== 弹窗：完成保养 ===== -->
-<div class="modal-overlay" id="completeModal">
-  <div class="modal-box modal-medium">
-    <div class="modal-header">
-      <h3><i class="fas fa-check-circle" style="color:#52c41a;margin-right:8px;"></i>完成保养</h3>
-      <button class="modal-close" onclick="closeModal('completeModal')"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="modal-body">
-      <p style="font-size:13px;color:#8c8c8c;margin-bottom:12px;">工单号：<span id="completeOrderNo" style="color:#1890ff;font-weight:600;"></span></p>
-      <div class="form-group" style="margin-bottom:12px;">
-        <label>保养方案</label>
-        <input type="text" id="completeMethod" placeholder="简述保养方案，如：全面清洁并更换润滑油">
-      </div>
-      <div class="form-group">
-        <label>保养总结 <span class="required">*</span></label>
-        <textarea id="completeSummary" placeholder="请填写保养过程总结、发现问题、处理结果等" style="min-height:100px;"></textarea>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-modal-default" onclick="closeModal('completeModal')">取消</button>
-      <button class="btn-modal-success" onclick="confirmCompleteMaintain()">确认完成</button>
-    </div>
-  </div>
-</div>
-
 <!-- ===== 弹窗：验收关闭工单（含备件消耗） ===== -->
 <div class="modal-overlay" id="closeModal">
   <div class="modal-box modal-medium">
@@ -901,13 +858,14 @@ const maintainPersons = [
   { id: 'P006', name: '赵铁军', role: '保养技师', skills: '机械/磨损' },
 ];
 
-// 状态映射
+// 状态映射（与设备保养管理一致）
 const STATUS_MAP = {
-  reported:   { label: '待执行',   class: 'status-wait',    icon: 'fa-clock',         color: '#fa8c16', next: 'started' },
-  started:    { label: '执行中',   class: 'status-process', icon: 'fa-wrench',        color: '#722ed1', next: 'completed' },
-  completed:  { label: '待验收',   class: 'status-close',   icon: 'fa-check-circle',  color: '#52c41a', next: 'closed' },
-  closed:     { label: '已完成',   class: 'status-done',    icon: 'fa-archive',       color: '#8c8c8c', next: null },
-  cancelled:  { label: '已取消',   class: 'status-cancel',  icon: 'fa-ban',           color: '#f5222d', next: null },
+  reported:  { label: '待接单',   class: 'status-wait',    icon: 'fa-clock',         color: '#fa8c16' },
+  accepted:  { label: '已接单',   class: 'status-repair',  icon: 'fa-user-check',    color: '#1890ff' },
+  started:   { label: '保养中',   class: 'status-process', icon: 'fa-tools',         color: '#722ed1' },
+  completed: { label: '待关闭',   class: 'status-close',   icon: 'fa-check-circle',  color: '#52c41a' },
+  closed:    { label: '已关闭',   class: 'status-done',    icon: 'fa-archive',       color: '#8c8c8c' },
+  cancelled: { label: '已取消',   class: 'status-cancel',  icon: 'fa-ban',           color: '#f5222d' },
 };
 
 function genInitialData() {
@@ -1160,10 +1118,10 @@ function closeModal(id) { document.getElementById(id).classList.remove('show'); 
 
 // ===================== 统计卡片 =====================
 function updateStats() {
-  const counts = { reported: 0, started: 0, completed: 0, closed: 0, cancelled: 0 };
+  const counts = { reported: 0, accepted: 0, started: 0, completed: 0, closed: 0, cancelled: 0 };
   maintainRecords.forEach(r => { counts[r.status] = (counts[r.status] || 0) + 1; });
   document.getElementById('statReported').textContent = counts.reported;
-  document.getElementById('statRepairing').textContent = counts.started;
+  document.getElementById('statRepairing').textContent = (counts.accepted || 0) + (counts.started || 0);
   document.getElementById('statCompleted').textContent = counts.completed;
   document.getElementById('statTotal').textContent = maintainRecords.length;
 }
@@ -1171,9 +1129,15 @@ function filterByStatus(status) {
   if (status === '') {
     resetFilter(); return;
   }
-  document.getElementById('filterStatus').value = status;
   document.querySelectorAll('.stat-card').forEach(c => c.classList.toggle('active', c.dataset.status === status));
-  applyFilter();
+  if (status === 'repairing') {
+    document.getElementById('filterStatus').value = '';
+    filteredRecords = maintainRecords.filter(r => r.status === 'accepted' || r.status === 'started');
+    currentPage = 1; renderTable(); return;
+  }
+  document.getElementById('filterStatus').value = status;
+  filteredRecords = maintainRecords.filter(r => r.status === status);
+  currentPage = 1; renderTable();
 }
 
 // ===================== 表格渲染 =====================
@@ -1199,6 +1163,11 @@ function renderTable() {
     if (r.status === 'reported') {
       actions = `
         <span class="operate-btn" onclick="openAssignModal('${r.id}')"><i class="fas fa-user-plus"></i>指派</span>
+        <span class="operate-btn operate-btn-success" onclick="selfAccept('${r.id}')"><i class="fas fa-hand-paper"></i>接单</span>
+        <span class="operate-btn" onclick="openDetailModal('${r.id}')"><i class="fas fa-eye"></i>查看</span>`;
+    } else if (r.status === 'accepted') {
+      actions = `
+        <span class="operate-btn operate-btn-warning" onclick="startMaintain('${r.id}')"><i class="fas fa-play"></i>开始</span>
         <span class="operate-btn" onclick="openDetailModal('${r.id}')"><i class="fas fa-eye"></i>查看</span>`;
     } else if (r.status === 'started') {
       actions = `
@@ -1206,7 +1175,7 @@ function renderTable() {
         <span class="operate-btn" onclick="openDetailModal('${r.id}')"><i class="fas fa-eye"></i>查看</span>`;
     } else if (r.status === 'completed') {
       actions = `
-        <span class="operate-btn" onclick="openCloseModal('${r.id}')"><i class="fas fa-archive"></i>关闭</span>
+        <span class="operate-btn" onclick="openCloseModal('${r.id}')"><i class="fas fa-boxes"></i>关闭</span>
         <span class="operate-btn" onclick="openDetailModal('${r.id}')"><i class="fas fa-eye"></i>查看</span>`;
     } else {
       actions = `<span class="operate-btn" onclick="openDetailModal('${r.id}')"><i class="fas fa-eye"></i>查看</span>`;
@@ -1452,31 +1421,51 @@ function confirmAssign() {
     record.status = 'started';
     closeModal('assignModal');
     updateStats(); applyFilter();
-    showToast(`已指派 ${selectedPerson.name} 负责保养，已自动进入执行中状态`);
+    showToast('已指派 ' + selectedPerson.name + '，已进入执行中（保养中）');
   }
 }
 
-// ===================== 完成保养 =====================
+// ===================== 自行接单 / 开始 / 完成（与设备保养管理流程一致） =====================
+function selfAccept(id) {
+  currentRecordId = id;
+  const r = maintainRecords.find(x => x.id === id);
+  showConfirm('确认接单', '您确定要接单处理模具「' + r.moldId + '」的保养任务吗？接单后状态将变为「已接单」。', 'fa-hand-paper', '#1890ff', doSelfAccept);
+}
+function doSelfAccept() {
+  const r = maintainRecords.find(x => x.id === currentRecordId);
+  if (r) {
+    r.assignee = 'admin'; r.assignTime = nowStr(); r.status = 'accepted';
+    closeModal('confirmModal'); updateStats(); applyFilter();
+    showToast('接单成功，请尽快安排保养');
+  }
+}
+function startMaintain(id) {
+  currentRecordId = id;
+  const r = maintainRecords.find(x => x.id === id);
+  showConfirm('开始保养', '确认开始保养模具「' + r.moldId + '」？系统将记录开始时间并计算保养时长。', 'fa-play-circle', '#722ed1', () => {
+    const rec = maintainRecords.find(x => x.id === currentRecordId);
+    if (rec) {
+      rec.actualStartTime = nowStr();
+      rec.status = 'started';
+      closeModal('confirmModal');
+      updateStats(); applyFilter();
+      showToast('保养已开始');
+    }
+  });
+}
 function completeMaintain(recordId) {
   currentRecordId = recordId;
-  const record = maintainRecords.find(r => r.id === recordId);
-  document.getElementById('completeOrderNo').textContent = record.id;
-  document.getElementById('completeMethod').value = record.maintainMethod || '';
-  document.getElementById('completeSummary').value = record.maintainSummary || '';
-  openModal('completeModal');
-}
-function confirmCompleteMaintain() {
-  const record = maintainRecords.find(r => r.id === currentRecordId);
-  if (!record) return;
-  const summary = document.getElementById('completeSummary').value.trim();
-  if (!summary) { showToast('请填写保养总结', 'error'); return; }
-  record.maintainMethod = document.getElementById('completeMethod').value.trim();
-  record.maintainSummary = summary;
-  record.completeTime = nowStr();
-  record.status = 'completed';
-  closeModal('completeModal');
-  updateStats(); applyFilter();
-  showToast('保养已完成，请尽快验收关闭工单');
+  const r = maintainRecords.find(x => x.id === recordId);
+  showConfirm('完成保养', '确认「' + r.moldId + '」的保养已完成？完成后需录入备件信息方可关闭保养单。', 'fa-check-circle', '#52c41a', () => {
+    const rec = maintainRecords.find(x => x.id === currentRecordId);
+    if (rec) {
+      rec.completeTime = nowStr();
+      rec.status = 'completed';
+      closeModal('confirmModal');
+      updateStats(); applyFilter();
+      showToast('保养已完成，请尽快录入备件并关闭保养单');
+    }
+  });
 }
 
 // ===================== 通用确认弹窗 =====================
@@ -1525,7 +1514,7 @@ function confirmCloseOrder() {
   record.status = 'closed';
   closeModal('closeModal');
   updateStats(); applyFilter();
-  showToast('工单已验收关闭，备件信息已保存');
+  showToast('保养单已关闭，备件信息已保存');
 }
 
 // ===================== 详情弹窗 =====================
@@ -1559,7 +1548,7 @@ function openDetailModal(recordId) {
     <div class="timeline-item">
       <div class="timeline-dot completed"></div>
       <div class="timeline-content">
-        <div class="time-title"><i class="fas fa-play" style="color:#722ed1;margin-right:4px;"></i>开始执行</div>
+        <div class="time-title"><i class="fas fa-play" style="color:#722ed1;margin-right:4px;"></i>开始保养</div>
         <div class="time-date">${record.actualStartTime}</div>
         ${record.maintainMethod ? `<div style="font-size:12px;color:#595959;margin-top:2px;">保养方案：${record.maintainMethod}</div>` : ''}
       </div>
@@ -1572,7 +1561,7 @@ function openDetailModal(recordId) {
       <div class="timeline-content">
         <div class="time-title"><i class="fas fa-check" style="color:#52c41a;margin-right:4px;"></i>保养完成</div>
         <div class="time-date">${record.completeTime}</div>
-        ${durs.repair !== null ? `<div class="time-duration"><i class="fas fa-clock"></i> 执行时长：${formatDuration(durs.repair)}</div>` : ''}
+        ${durs.repair !== null ? `<div class="time-duration"><i class="fas fa-clock"></i> 保养时长：${formatDuration(durs.repair)}</div>` : ''}
       </div>
     </div>`;
   }
@@ -1630,7 +1619,7 @@ function openDetailModal(recordId) {
           <div class="detail-section-title"><i class="fas fa-file-alt"></i> 保养信息</div>
           <div class="detail-grid">
             <div class="detail-item"><span class="detail-label">保养计划名称</span><span class="detail-value">${record.planName}</span></div>
-            <div class="detail-item"><span class="detail-label">当前状态</span><span class="detail-value"><span class="status-tag ${st.class}">${st.label}</span></span></div>
+            <div class="detail-item"><span class="detail-label">当前状态</span><span class="detail-value"><span class="status-tag ${st.class}"><i class="fas ${st.icon}" style="font-size:9px;"></i> ${st.label}</span></span></div>
             <div class="detail-item"><span class="detail-label">计划开始</span><span class="detail-value">${record.planStart ? record.planStart.replace('T',' ') : '-'}</span></div>
             <div class="detail-item"><span class="detail-label">计划完成</span><span class="detail-value">${record.planEnd ? record.planEnd.replace('T',' ') : '-'}</span></div>
             <div class="detail-item"><span class="detail-label">紧急程度</span><span class="detail-value" style="color:${record.urgency==='特急'?'#f5222d':record.urgency==='紧急'?'#fa8c16':'#52c41a'}">${record.urgency}</span></div>
@@ -1672,10 +1661,10 @@ function openDetailModal(recordId) {
           <div style="display:flex;flex-direction:column;gap:8px;">
             <div style="background:#fff7e6;padding:10px 12px;border-radius:6px;">
               <div style="font-size:12px;color:#fa8c16;">响应时长</div>
-              <div style="font-size:16px;font-weight:700;color:#fa8c16;margin-top:2px;">${durs.response !== null ? formatDuration(durs.response) : '<span style="font-size:12px;font-weight:400;color:#bfbfbf">未指派</span>'}</div>
+              <div style="font-size:16px;font-weight:700;color:#fa8c16;margin-top:2px;">${durs.response !== null ? formatDuration(durs.response) : '<span style="font-size:12px;font-weight:400;color:#bfbfbf">未接单</span>'}</div>
             </div>
             <div style="background:#e6f7ff;padding:10px 12px;border-radius:6px;">
-              <div style="font-size:12px;color:#1890ff;">执行时长</div>
+              <div style="font-size:12px;color:#1890ff;">保养时长</div>
               <div style="font-size:16px;font-weight:700;color:#1890ff;margin-top:2px;">${durs.repair !== null ? formatDuration(durs.repair) : '<span style="font-size:12px;font-weight:400;color:#bfbfbf">未完成</span>'}</div>
             </div>
             <div style="background:#f6ffed;padding:10px 12px;border-radius:6px;">
@@ -1690,10 +1679,12 @@ function openDetailModal(recordId) {
   let footerHtml = `<button class="btn-modal-default" onclick="closeModal('detailModal')">关闭</button>`;
   if (record.status === 'reported') {
     footerHtml += `<button class="btn-modal-primary" onclick="closeModal('detailModal');openAssignModal('${record.id}')">指派人员</button>`;
+  } else if (record.status === 'accepted') {
+    footerHtml += `<button class="btn-modal-primary" style="background:#722ed1" onclick="closeModal('detailModal');startMaintain('${record.id}')">开始保养</button>`;
   } else if (record.status === 'started') {
     footerHtml += `<button class="btn-modal-success" onclick="closeModal('detailModal');completeMaintain('${record.id}')">完成保养</button>`;
   } else if (record.status === 'completed') {
-    footerHtml += `<button class="btn-modal-primary" onclick="closeModal('detailModal');openCloseModal('${record.id}')">验收关闭</button>`;
+    footerHtml += `<button class="btn-modal-primary" onclick="closeModal('detailModal');openCloseModal('${record.id}')">录入备件关闭</button>`;
   }
   document.getElementById('detailFooter').innerHTML = footerHtml;
   openModal('detailModal');
