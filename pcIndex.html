@@ -442,14 +442,10 @@ body {
     </div>
     <div class="menu-trigger"><i class="fas fa-bars"></i></div>
     <nav class="nav-menu" id="topNavMenu">
-      <div class="nav-item" data-module="home"><i class="fas fa-home"></i>首页</div>
-      <div class="nav-item" data-module="workbench"><i class="fas fa-desktop"></i>工作台</div>
-      <div class="nav-item" data-module="process"><i class="fas fa-project-diagram"></i>流程管理</div>
-      <div class="nav-item" data-module="product"><i class="fas fa-cogs"></i>产品工艺</div>
-      <div class="nav-item" data-module="sale"><i class="fas fa-shopping-cart"></i>销售管理</div>
-      <div class="nav-item" data-module="project"><i class="fas fa-tasks"></i>项目管理</div>
-      <div class="nav-item active" data-module="hr"><i class="fas fa-users"></i>人力资源</div>
-      <div class="nav-item" data-module="inventory"><i class="fas fa-warehouse"></i>库存管理</div>
+      <div class="nav-item active" data-module="production"><i class="fas fa-industry"></i>生产管理</div>
+      <div class="nav-item" data-module="equipment"><i class="fas fa-cogs"></i>设备管理</div>
+      <div class="nav-item" data-module="mold"><i class="fas fa-shapes"></i>模具管理</div>
+      <div class="nav-item" data-module="warehouse"><i class="fas fa-warehouse"></i>仓库管理</div>
     </nav>
     <div class="nav-more-dots"><i class="fas fa-ellipsis-h"></i></div>
   </div>
@@ -470,20 +466,20 @@ body {
 <div class="main-body">
   <!-- 左侧边栏（独立菜单，同步人才管理样式） -->
   <aside class="sidebar-wrap" id="sidebar">
-    <a class="sidebar-item" data-page="人才管理" onclick="openPage('人才管理', '人才管理.html')">
-      <i class="fas fa-users"></i><span>人才管理</span>
+    <a class="sidebar-item" data-page="设备台账" onclick="openPage('设备台账', '设备台账.html')">
+      <i class="fas fa-list-alt"></i><span>设备台账</span>
     </a>
-    <a class="sidebar-item" data-page="人员画像" onclick="openPage('人员画像', '人员画像.html')">
-      <i class="fas fa-user-circle"></i><span>人员画像</span>
+    <a class="sidebar-item active" data-page="设备维修" onclick="openPage('设备维修', '设备维修管理.html')">
+      <i class="fas fa-wrench"></i><span>设备维修</span>
     </a>
-    <a class="sidebar-item" data-page="人才评分规则" onclick="openPage('人才评分规则', '人才评分规则.html')">
-      <i class="fas fa-star"></i><span>人才评分规则</span>
+    <a class="sidebar-item" data-page="设备保养" onclick="openPage('设备保养', '设备保养.html')">
+      <i class="fas fa-oil-can"></i><span>设备保养</span>
     </a>
-    <a class="sidebar-item" data-page="培训记录" onclick="openPage('培训记录', '培训记录.html')">
-      <i class="fas fa-chalkboard-teacher"></i><span>培训记录</span>
+    <a class="sidebar-item" data-page="设备点检" onclick="openPage('设备点检', '设备点检.html')">
+      <i class="fas fa-clipboard-check"></i><span>设备点检</span>
     </a>
-    <a class="sidebar-item active" data-page="证书管理" onclick="openPage('证书管理', '证书管理.html')">
-      <i class="fas fa-certificate"></i><span>证书管理</span>
+    <a class="sidebar-item" data-page="设备报废" onclick="openPage('设备报废', '设备报废.html')">
+      <i class="fas fa-trash-alt"></i><span>设备报废</span>
     </a>
   </aside>
 
@@ -550,8 +546,8 @@ function activateTab(name) {
   document.querySelectorAll('.nav-item').forEach(item => {
     const mod = item.dataset.module;
     if (name === '首页') item.classList.toggle('active', mod === 'home');
-    else if (['人才管理','人员画像','人才评分规则','培训记录','证书管理'].includes(name))
-      item.classList.toggle('active', mod === 'hr');
+    else if (['设备台账','设备维修','设备保养','设备点检','设备报废'].includes(name))
+      item.classList.toggle('active', mod === 'equipment');
   });
   updateHash(name, tab.src);
 }
@@ -662,7 +658,7 @@ function openNotify() { openPage('消息通知', '通知中心.html'); }
 document.addEventListener('DOMContentLoaded', () => {
   renderTabs();
   restoreFromHash();
-  if (!window.location.hash) openPage('证书管理', '证书管理.html');
+  if (!window.location.hash) openPage('设备维修', '设备维修管理.html');
 });
 </script>
 </body>

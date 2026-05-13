@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>设备保养管理</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #f0f2f5;
+  color: #262626;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.page-header { padding: 0 24px 16px; }
+.page-header h1 { font-size: 18px; font-weight: 600; color: #262626; }
+.breadcrumb { font-size: 12px; color: #8c8c8c; margin-top: 4px; }
+.breadcrumb i { font-size: 10px; margin: 0 6px; color: #bfbfbf; }
+
+.stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; padding: 0 24px 20px; }
+.stat-card { background: #fff; border-radius: 8px; padding: 20px; display: flex; align-items: center; gap: 16px; border: 1px solid #f0f0f0; transition: all 0.3s; cursor: pointer; }
+.stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.stat-card.active { border-color: #1890ff; box-shadow: 0 0 0 2px rgba(24,144,255,0.08); }
+.stat-icon { width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.stat-icon.orange { background: #fff7e6; color: #fa8c16; }
+.stat-icon.blue { background: #e6f7ff; color: #1890ff; }
+.stat-icon.green { background: #f6ffed; color: #52c41a; }
+.stat-icon.purple { background: #f9f0ff; color: #722ed1; }
+.stat-content { flex: 1; }
+.stat-title { font-size: 14px; color: #666; margin-bottom: 4px; }
+.stat-value { font-size: 28px; font-weight: 600; color: #262626; line-height: 1; }
+
+.query-box { background: #fff; border-radius: 8px; border: 1px solid #f0f0f0; padding: 20px; margin: 0 24px 16px; }
+.query-grid { display: grid; grid-template-columns: 1fr 1fr 2fr auto; gap: 16px; }
+.query-item { display: flex; flex-direction: column; }
+.query-item label { font-size: 13px; color: #666; margin-bottom: 6px; font-weight: 500; }
+.query-item .input-field, .query-item select { height: 34px; padding: 0 10px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 13px; color: #262626; outline: none; transition: all 0.2s; background: #fff; font-family: inherit; width: 100%; }
+.query-item .input-field:focus, .query-item select:focus { border-color: #1890ff; box-shadow: 0 0 0 3px rgba(24,144,255,0.1); }
+.query-item .date-range { display: flex; align-items: center; gap: 8px; }
+.query-item .date-range input { flex: 1; height: 34px; padding: 0 8px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 13px; font-family: inherit; }
+.query-item .date-range input:focus { border-color: #1890ff; box-shadow: 0 0 0 3px rgba(24,144,255,0.1); }
+.query-item .date-range span { color: #bfbfbf; font-size: 12px; }
+.query-btns { display: flex; align-items: flex-end; gap: 8px; }
+.btn-search { background: #1890ff; color: #fff; border: none; height: 34px; padding: 0 20px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.3s; font-family: inherit; display: flex; align-items: center; gap: 5px; }
+.btn-search:hover { background: #40a9ff; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(24,144,255,0.4); }
+.btn-reset { background: #fff; color: #595959; border: 1px solid #d9d9d9; height: 34px; padding: 0 20px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all 0.2s; font-family: inherit; display: flex; align-items: center; gap: 5px; }
+.btn-reset:hover { color: #1890ff; border-color: #1890ff; }
+
+.toolbar { display: flex; align-items: center; justify-content: space-between; padding: 0 24px 12px; }
+.btn-add { background: #1890ff; color: #fff; border: none; height: 34px; padding: 0 16px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.3s; font-family: inherit; display: flex; align-items: center; gap: 5px; }
+.btn-add:hover { background: #40a9ff; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(24,144,255,0.4); }
+.btn-import { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; height: 34px; padding: 0 16px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: all 0.2s; font-family: inherit; display: flex; align-items: center; gap: 5px; }
+
+.table-wrapper { margin: 0 24px; background: #fff; border-radius: 8px; border: 1px solid #f0f0f0; overflow-x: auto; }
+.table-wrapper::-webkit-scrollbar { height: 8px; }
+.table-wrapper::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+.table-wrapper::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 4px; }
+.data-table { width: 100%; border-collapse: collapse; min-width: 1500px; }
+.data-table thead th { background: #fafafa; padding: 12px 16px; font-size: 13px; font-weight: 500; color: #666; text-align: left; border-bottom: 1px solid #f0f0f0; white-space: nowrap; position: sticky; top: 0; z-index: 5; }
+.data-table tbody tr { border-bottom: 1px solid #f5f5f5; transition: background 0.15s; }
+.data-table tbody tr:hover { background: #fafafa; }
+.data-table tbody td { padding: 12px 16px; font-size: 13px; color: #595959; vertical-align: middle; white-space: nowrap; }
+.data-table .col-wrap { white-space: normal; }
+.data-table .col-device-name { font-weight: 600; color: #262626; font-size: 13px; }
+.data-table .col-device-code { font-size: 12px; color: #8c8c8c; margin-top: 2px; }
+.data-table .col-plan-name { font-weight: 600; color: #262626; font-size: 13px; }
+.data-table .col-plan-desc { font-size: 11px; color: #8c8c8c; margin-top: 2px; }
+.data-table .col-mono { font-family: 'SF Mono', 'Consolas', monospace; font-size: 12px; color: #1890ff; font-weight: 600; }
+.data-table .col-time { font-size: 12px; color: #595959; }
+.data-table .col-duration { font-size: 12px; font-family: 'SF Mono', monospace; font-weight: 500; color: #262626; }
+
+.status-tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; white-space: nowrap; border: 1px solid transparent; }
+.status-wait { background: #fff7e6; color: #fa8c16; border-color: #ffd591; }
+.status-repair { background: #e6f7ff; color: #1890ff; border-color: #91d5ff; }
+.status-process { background: #f9f0ff; color: #722ed1; border-color: #d3adf7; }
+.status-close { background: #f6ffed; color: #52c41a; border-color: #b7eb8f; }
+.status-done { background: #f5f5f5; color: #8c8c8c; border-color: #d9d9d9; }
+.status-cancel { background: #fff1f0; color: #f5222d; border-color: #ffa39e; }
+
+.urgency-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 500; }
+.urgency-high { color: #f5222d; } .urgency-medium { color: #fa8c16; } .urgency-low { color: #52c41a; }
+.urgency-dot { width: 6px; height: 6px; border-radius: 50%; }
+.urgency-high .urgency-dot { background: #f5222d; } .urgency-medium .urgency-dot { background: #fa8c16; } .urgency-low .urgency-dot { background: #52c41a; }
+
+.operate-btn { color: #1890ff; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 3px; transition: all 0.15s; margin-right: 10px; }
+.operate-btn:hover { color: #40a9ff; text-decoration: underline; }
+.operate-btn-success { color: #52c41a; } .operate-btn-success:hover { color: #73d13d; }
+.operate-btn-warning { color: #fa8c16; } .operate-btn-warning:hover { color: #ffa940; }
+
+.pagination-area { display: flex; align-items: center; justify-content: flex-end; gap: 16px; padding: 12px 24px; }
+.pagination-info { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #666; }
+.page-size-select { height: 30px; padding: 0 8px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; background: #fff; font-family: inherit; cursor: pointer; }
+.pagination-btns { display: flex; align-items: center; gap: 4px; }
+.pagination-btn { min-width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border: 1px solid #f0f0f0; border-radius: 4px; background: #fff; color: #595959; font-size: 13px; cursor: pointer; transition: all 0.15s; font-family: inherit; }
+.pagination-btn:hover:not(:disabled):not(.active) { color: #1890ff; border-color: #1890ff; }
+.pagination-btn.active { background: #1890ff; color: #fff; border-color: #1890ff; }
+.pagination-jump { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #666; }
+.pagination-jump input { width: 42px; height: 30px; padding: 0 4px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 13px; text-align: center; font-family: inherit; }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+.modal-overlay.show { display: flex; }
+.modal-box { background: #fff; border-radius: 8px; box-shadow: 0 12px 48px rgba(0,0,0,0.15); max-height: 90vh; overflow: hidden; display: flex; flex-direction: column; animation: modalIn 0.2s ease; }
+@keyframes modalIn { from { opacity:0; transform:scale(0.96) translateY(8px); } to { opacity:1; transform:scale(1) translateY(0); } }
+.modal-medium { width: 640px; }
+.modal-large { width: 900px; }
+.modal-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid #f0f0f0; }
+.modal-header h3 { font-size: 16px; font-weight: 600; }
+.modal-close { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #8c8c8c; border: none; background: transparent; transition: all 0.15s; font-size: 16px; }
+.modal-close:hover { background: #f5f5f5; color: #262626; }
+.modal-body { padding: 16px 20px; overflow-y: auto; flex: 1; }
+.modal-footer { display: flex; align-items: center; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid #f0f0f0; background: #fafafa; }
+.btn-modal-primary, .btn-modal-success, .btn-modal-default { height: 34px; padding: 0 18px; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; font-family: inherit; border: none; }
+.btn-modal-primary { background: #1890ff; color: #fff; } .btn-modal-primary:hover { background: #40a9ff; }
+.btn-modal-success { background: #52c41a; color: #fff; } .btn-modal-success:hover { background: #73d13d; }
+.btn-modal-default { background: #fff; color: #595959; border: 1px solid #d9d9d9; } .btn-modal-default:hover { color: #1890ff; border-color: #1890ff; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 13px; color: #666; font-weight: 500; }
+.form-group label .required { color: #f5222d; margin-left: 2px; }
+.form-group input, .form-group select, .form-group textarea { height: 34px; padding: 0 10px; border: 1px solid #d9d9d9; border-radius: 6px; font-size: 13px; color: #262626; outline: none; transition: all 0.2s; background: #fff; font-family: inherit; width: 100%; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #1890ff; box-shadow: 0 0 0 3px rgba(24,144,255,0.1); }
+.form-group textarea { height: auto; min-height: 70px; padding: 8px 10px; resize: vertical; }
+
+.detail-section { margin-bottom: 16px; }
+.detail-section-title { font-size: 14px; font-weight: 600; color: #262626; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; padding-bottom: 8px; border-bottom: 1px solid #f5f5f5; }
+.detail-section-title i { color: #1890ff; font-size: 14px; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }
+.detail-item { display: flex; flex-direction: column; gap: 2px; }
+.detail-item .detail-label { font-size: 12px; color: #999; }
+.detail-item .detail-value { font-size: 13px; color: #262626; font-weight: 500; }
+.detail-item .detail-value.mono { font-family: 'SF Mono', 'Consolas', monospace; font-size: 12px; }
+
+.timeline { position: relative; padding-left: 20px; }
+.timeline::before { content: ''; position: absolute; left: 5px; top: 4px; bottom: 4px; width: 2px; background: #f0f0f0; }
+.timeline-item { position: relative; padding-bottom: 14px; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-dot { position: absolute; left: -20px; top: 2px; width: 10px; height: 10px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 1px #d9d9d9; background: #fff; }
+.timeline-dot.completed { background: #52c41a; box-shadow: 0 0 0 1px #52c41a; }
+.timeline-content { font-size: 13px; }
+.timeline-content .time-title { font-weight: 600; color: #262626; }
+.timeline-content .time-date { font-size: 12px; color: #8c8c8c; margin-top: 2px; }
+.timeline-content .time-duration { font-size: 12px; color: #1890ff; margin-top: 2px; font-weight: 500; }
+
+/* 保养项目 */
+.item-section { border: 1px solid #f0f0f0; border-radius: 8px; padding: 16px; margin-top: 16px; }
+.item-section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.item-section-title { font-size: 14px; font-weight: 600; color: #262626; display: flex; align-items: center; gap: 6px; }
+.item-table { width: 100%; border-collapse: collapse; }
+.item-table th, .item-table td { padding: 8px 10px; text-align: left; font-size: 12px; border-bottom: 1px solid #f0f0f0; }
+.item-table th { background: #fafafa; font-weight: 500; color: #666; }
+.item-table input { width: 100%; height: 30px; padding: 0 6px; border: 1px solid #d9d9d9; border-radius: 4px; font-size: 12px; font-family: inherit; outline: none; }
+.item-table input:focus { border-color: #1890ff; }
+.item-done { color: #52c41a; } .item-pending { color: #8c8c8c; }
+.btn-add-item { display: inline-flex; align-items: center; gap: 4px; padding: 5px 12px; border: 1px dashed #d9d9d9; border-radius: 6px; background: #fafafa; color: #1890ff; font-size: 12px; cursor: pointer; transition: all 0.15s; font-family: inherit; font-weight: 500; }
+.btn-add-item:hover { border-color: #1890ff; background: #f0f7ff; }
+.btn-remove-item { color: #ff4d4f; cursor: pointer; font-size: 13px; background: none; border: none; }
+.btn-remove-item:hover { color: #ff7875; }
+
+.person-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; max-height: 320px; overflow-y: auto; }
+.person-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; cursor: pointer; transition: all 0.15s; border: 1px solid #f0f0f0; background: #fafafa; }
+.person-item:hover { background: #f0f7ff; border-color: #91d5ff; }
+.person-item.selected { background: #e6f7ff; border-color: #1890ff; }
+.person-avatar { width: 36px; height: 36px; border-radius: 50%; background: #e6f7ff; color: #1890ff; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+.person-name { font-size: 13px; font-weight: 500; }
+.person-role { font-size: 11px; color: #8c8c8c; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.person-check { color: #1890ff; font-size: 16px; display: none; }
+.person-item.selected .person-check { display: block; }
+
+.toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.toast-item { background: #fff; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); padding: 10px 18px; display: flex; align-items: center; gap: 8px; font-size: 14px; color: #262626; animation: toastIn 0.25s ease; pointer-events: auto; }
+.toast-item.toast-success { border-left: 3px solid #52c41a; } .toast-item.toast-error { border-left: 3px solid #f5222d; }
+@keyframes toastIn { from { opacity:0; transform: translateY(-8px); } to { opacity:1; transform: translateY(0); } }
+
+.confirm-box { text-align: center; padding: 8px 0; }
+.confirm-box i { font-size: 36px; margin-bottom: 12px; }
+.confirm-box .confirm-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+.confirm-box .confirm-desc { font-size: 13px; color: #8c8c8c; line-height: 1.5; }
+
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; color: #bfbfbf; }
+.empty-state i { font-size: 48px; margin-bottom: 12px; }
+
+.tag { display: inline-flex; align-items: center; padding: 1px 6px; border-radius: 4px; font-size: 11px; font-weight: 500; }
+.tag-blue { background: #e6f7ff; color: #1890ff; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1><i class="fas fa-clipboard-check" style="color:#1890ff;margin-right:10px;"></i>设备保养管理</h1>
+  <div class="breadcrumb">设备管理 <i class="fas fa-chevron-right"></i> 保养工单</div>
+</div>
+
+<div class="stat-cards">
+  <div class="stat-card" data-status="reported" onclick="filterByStatus('reported')">
+    <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+    <div class="stat-content"><div class="stat-title">待接单</div><div class="stat-value" id="statReported">0</div></div>
+  </div>
+  <div class="stat-card" data-status="repairing" onclick="filterByStatus('repairing')">
+    <div class="stat-icon blue"><i class="fas fa-tools"></i></div>
+    <div class="stat-content"><div class="stat-title">保养中</div><div class="stat-value" id="statRepairing">0</div></div>
+  </div>
+  <div class="stat-card" data-status="completed" onclick="filterByStatus('completed')">
+    <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+    <div class="stat-content"><div class="stat-title">待关闭</div><div class="stat-value" id="statCompleted">0</div></div>
+  </div>
+  <div class="stat-card" data-status="" onclick="resetFilter()">
+    <div class="stat-icon purple"><i class="fas fa-clipboard-list"></i></div>
+    <div class="stat-content"><div class="stat-title">总保养数</div><div class="stat-value" id="statTotal">0</div></div>
+  </div>
+</div>
+
+<div class="query-box">
+  <div class="query-grid">
+    <div class="query-item">
+      <label>状态</label>
+      <select id="filterStatus">
+        <option value="">全部状态</option>
+        <option value="reported">待接单</option>
+        <option value="accepted">已接单</option>
+        <option value="started">保养中</option>
+        <option value="completed">待关闭</option>
+        <option value="closed">已关闭</option>
+        <option value="cancelled">已取消</option>
+      </select>
+    </div>
+    <div class="query-item">
+      <label>关键字</label>
+      <input type="text" class="input-field" id="filterKeyword" placeholder="单号/计划名称/设备">
+    </div>
+    <div class="query-item">
+      <label>创建日期范围</label>
+      <div class="date-range">
+        <input type="date" id="filterDateFrom"><span>至</span><input type="date" id="filterDateTo">
+      </div>
+    </div>
+    <div class="query-btns">
+      <button class="btn-search" onclick="applyFilter()"><i class="fas fa-search"></i> 查询</button>
+      <button class="btn-reset" onclick="resetFilter()"><i class="fas fa-trash-alt"></i> 清空</button>
+    </div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="toolbar-left" style="display:flex;align-items:center;gap:8px;">
+    <button class="btn-add" onclick="openNewModal()"><i class="fas fa-plus"></i> 新增保养</button>
+    <button class="btn-import" onclick="exportData()"><i class="fas fa-download"></i> 导出</button>
+  </div>
+</div>
+
+<div class="table-wrapper">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th style="width:40px"><input type="checkbox" id="selectAll" onclick="toggleSelectAll()"></th>
+        <th style="width:50px">序号</th>
+        <th style="width:140px">保养单号</th>
+        <th style="min-width:160px">保养计划名称</th>
+        <th style="min-width:140px">设备信息</th>
+        <th style="width:70px">紧急度</th>
+        <th style="width:80px">状态</th>
+        <th style="width:80px">创建人</th>
+        <th style="width:90px">保养负责人</th>
+        <th style="width:80px">保养项目数</th>
+        <th style="width:90px">创建时间</th>
+        <th style="width:80px">响应时长</th>
+        <th style="width:80px">保养时长</th>
+        <th style="width:80px">关闭时长</th>
+        <th style="width:80px">取消人</th>
+        <th style="width:90px">取消时间</th>
+        <th style="min-width:120px">取消原因</th>
+        <th style="width:200px;text-align:center">操作</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<div class="pagination-area">
+  <div class="pagination-info"><span>共 <strong id="totalCount">0</strong> 条</span><select class="page-size-select" id="pageSize" onchange="changePageSize()"><option value="10">10条/页</option><option value="20" selected>20条/页</option><option value="50">50条/页</option></select></div>
+  <div class="pagination-btns" id="pageNumbers"></div>
+  <div class="pagination-jump"><span>前往</span><input type="text" id="jumpPage" onkeydown="if(event.key==='Enter')jumpToPage()"><span>页</span></div>
+</div>
+
+<!-- 新增保养 -->
+<div class="modal-overlay" id="newModal">
+  <div class="modal-box modal-large">
+    <div class="modal-header">
+      <h3><i class="fas fa-plus-circle" style="color:#1890ff;margin-right:8px;"></i>新增设备保养</h3>
+      <button class="modal-close" onclick="closeModal('newModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>设备选择 <span class="required">*</span></label>
+          <select id="newDevice" onchange="onDeviceChange()"><option value="">请选择设备</option></select>
+        </div>
+        <div class="form-group">
+          <label>设备编号</label>
+          <input type="text" id="newDeviceCode" readonly placeholder="自动填充">
+        </div>
+        <div class="form-group">
+          <label>设备型号</label>
+          <input type="text" id="newDeviceModel" readonly placeholder="自动填充">
+        </div>
+        <div class="form-group">
+          <label>所在车间</label>
+          <input type="text" id="newWorkshop" readonly placeholder="自动填充">
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>保养计划名称 <span class="required">*</span></label>
+          <input type="text" id="newPlanName" placeholder="如：冲压机月度保养">
+        </div>
+        <div class="form-group">
+          <label>计划开始时间 <span class="required">*</span></label>
+          <input type="datetime-local" id="newPlanStart">
+        </div>
+        <div class="form-group">
+          <label>计划完成时间 <span class="required">*</span></label>
+          <input type="datetime-local" id="newPlanEnd">
+        </div>
+        <div class="form-group">
+          <label>紧急程度</label>
+          <select id="newUrgency"><option value="特急">特急 - 立即执行</option><option value="紧急" selected>紧急 - 24小时内执行</option><option value="一般">一般 - 可延期执行</option></select>
+        </div>
+        <div class="form-group">
+          <label>创建人</label>
+          <input type="text" id="newReporter" value="admin" readonly>
+        </div>
+        <div class="form-group" style="grid-column:1/-1">
+          <label>备注</label>
+          <textarea id="newRemark" placeholder="其他说明（可选）"></textarea>
+        </div>
+      </div>
+      <div class="item-section">
+        <div class="item-section-header">
+          <div class="item-section-title"><i class="fas fa-list-ul"></i> 保养项目明细</div>
+          <button class="btn-add-item" onclick="addItemRow()"><i class="fas fa-plus"></i> 新增项目</button>
+        </div>
+        <table class="item-table">
+          <thead><tr><th style="width:22%">保养名称</th><th style="width:18%">保养部位</th><th style="width:32%">保养方法</th><th style="width:23%">保养结果标准</th><th style="width:5%"></th></tr></thead>
+          <tbody id="newItemTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-default" onclick="closeModal('newModal')">取消</button>
+      <button class="btn-modal-primary" onclick="submitNew()">提交保养</button>
+    </div>
+  </div>
+</div>
+
+<!-- 指派 -->
+<div class="modal-overlay" id="assignModal">
+  <div class="modal-box modal-medium">
+    <div class="modal-header">
+      <h3><i class="fas fa-user-plus" style="color:#1890ff;margin-right:8px;"></i>指派保养人员</h3>
+      <button class="modal-close" onclick="closeModal('assignModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:#8c8c8c;margin-bottom:12px;">保养单 <span id="assignOrderNo" style="color:#1890ff;font-weight:600;"></span></p>
+      <input type="text" id="personSearch" placeholder="搜索姓名或技能" oninput="filterPersons()" style="width:100%;height:34px;padding:0 10px;border:1px solid #d9d9d9;border-radius:6px;font-size:13px;font-family:inherit;outline:none;margin-bottom:12px;">
+      <div class="person-grid" id="personList"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-default" onclick="closeModal('assignModal')">取消</button>
+      <button class="btn-modal-primary" onclick="confirmAssign()">确认指派</button>
+    </div>
+  </div>
+</div>
+
+<!-- 详情 -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-box modal-large">
+    <div class="modal-header">
+      <h3><i class="fas fa-file-alt" style="color:#1890ff;margin-right:8px;"></i>保养详情</h3>
+      <button class="modal-close" onclick="closeModal('detailModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body" id="detailContent"></div>
+    <div class="modal-footer" id="detailFooter"></div>
+  </div>
+</div>
+
+<!-- 关闭弹窗 -->
+<div class="modal-overlay" id="closeModal">
+  <div class="modal-box modal-medium">
+    <div class="modal-header">
+      <h3><i class="fas fa-boxes" style="color:#52c41a;margin-right:8px;"></i>录入备件并关闭保养单</h3>
+      <button class="modal-close" onclick="closeModal('closeModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:#8c8c8c;margin-bottom:10px;">保养单号：<span id="closeOrderNo" style="color:#1890ff;font-weight:600;"></span></p>
+      <div style="margin-bottom:12px;">
+        <label style="font-size:13px;color:#666;font-weight:500;">保养总结 <span style="color:#8c8c8c;font-size:12px;font-weight:400;">（完成时填写，可在此修改）</span></label>
+        <textarea id="closeSummary" placeholder="请填写保养过程总结" style="width:100%;min-height:60px;padding:8px 10px;border:1px solid #d9d9d9;border-radius:6px;font-size:13px;font-family:inherit;outline:none;resize:vertical;margin-top:5px;"></textarea>
+      </div>
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <label style="font-size:13px;color:#666;font-weight:500;"><i class="fas fa-boxes" style="color:#1890ff;margin-right:4px;"></i>消耗备件清单</label>
+          <button class="btn-add-item" onclick="addSpareRow()"><i class="fas fa-plus"></i> 添加备件</button>
+        </div>
+        <table class="item-table" id="spareTable">
+          <thead><tr><th style="width:40%">备件名称</th><th style="width:30%">规格型号</th><th style="width:20%">数量</th><th style="width:10%"></th></tr></thead>
+          <tbody id="spareTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-modal-default" onclick="closeModal('closeModal')">取消</button>
+      <button class="btn-modal-success" onclick="confirmCloseOrder()">确认关闭保养单</button>
+    </div>
+  </div>
+</div>
+
+<!-- 确认 -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box" style="width:400px;">
+    <div class="modal-body"><div class="confirm-box"><i id="confirmIcon" class="fas fa-question-circle" style="color:#fa8c16;"></i><div class="confirm-title" id="confirmTitle">确认</div><div class="confirm-desc" id="confirmDesc"></div></div></div>
+    <div class="modal-footer" style="justify-content:center;"><button class="btn-modal-default" onclick="closeModal('confirmModal')">取消</button><button class="btn-modal-primary" id="confirmBtn">确认</button></div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+const devices = [
+  { code: 'DEV-CY-001', name: '冲压机-001', model: 'JH21-160', workshop: '冲压车间' },
+  { code: 'DEV-CY-002', name: '冲压机-002', model: 'JH21-250', workshop: '冲压车间' },
+  { code: 'DEV-SK-003', name: '数控车床-003', model: 'CK6140', workshop: '机加车间' },
+  { code: 'DEV-ZW-004', name: '折弯机-002', model: 'WC67Y-100/3200', workshop: '钣金车间' },
+  { code: 'DEV-HJ-005', name: '焊接机器人-001', model: 'IRB-2600', workshop: '焊接车间' },
+  { code: 'DEV-CY-006', name: '冲压机-003', model: 'JH21-315', workshop: '冲压车间' },
+  { code: 'DEV-SK-007', name: '数控铣床-001', model: 'XK714', workshop: '机加车间' },
+  { code: 'DEV-ZW-008', name: '剪板机-001', model: 'QC12Y-6x3200', workshop: '钣金车间' },
+];
+
+const persons = [
+  { id: 'P001', name: '王建国', role: '高级保养技师', skills: '机械/液压' },
+  { id: 'P002', name: '李志强', role: '电气工程师', skills: '电气/控制' },
+  { id: 'P003', name: '张明华', role: '设备工程师', skills: '机械/电气' },
+  { id: 'P004', name: '刘伟强', role: '保养技师', skills: '液压/传感器' },
+  { id: 'P005', name: '陈东明', role: '高级保养技师', skills: '控制/机器人' },
+  { id: 'P006', name: '赵铁军', role: '保养技师', skills: '机械/磨损' },
+];
+
+const STATUS_MAP = {
+  reported:  { label: '待接单',   class: 'status-wait',    icon: 'fa-clock',         color: '#fa8c16' },
+  accepted:  { label: '已接单',   class: 'status-repair',  icon: 'fa-user-check',    color: '#1890ff' },
+  started:   { label: '保养中',   class: 'status-process', icon: 'fa-tools',         color: '#722ed1' },
+  completed: { label: '待关闭',   class: 'status-close',   icon: 'fa-check-circle',  color: '#52c41a' },
+  closed:    { label: '已关闭',   class: 'status-done',    icon: 'fa-archive',       color: '#8c8c8c' },
+  cancelled: { label: '已取消',   class: 'status-cancel',  icon: 'fa-ban',           color: '#f5222d' },
+};
+
+function genData() {
+  return [
+    {
+      id: 'BY20260511-001', planName: '冲压机月度保养', deviceCode: 'DEV-CY-001', deviceName: '冲压机-001', deviceModel: 'JH21-160', workshop: '冲压车间',
+      urgency: '紧急', status: 'reported', reporter: '张师傅', reportTime: '2026-05-11 08:30',
+      assignee: null, assignTime: null, startTime: null, completeTime: null, closeTime: null,
+      planStart: '2026-05-11 09:00', planEnd: '2026-05-11 17:00',
+      cancelPerson: null, cancelTime: null, cancelReason: '', remark: '',
+      items: [
+        { name: '润滑系统检查', part: '导轨/滑块', method: '加注N68导轨油，检查油路通畅', standard: '油膜均匀无干涩', status: 'pending', completeTime: null },
+        { name: '液压系统保养', part: '液压泵站', method: '更换液压油，清洗滤芯', standard: '压力稳定无泄漏', status: 'pending', completeTime: null },
+        { name: '电气连接检查', part: '控制柜/接线端', method: '紧固接线端子，清洁灰尘', standard: '连接可靠无松动', status: 'pending', completeTime: null },
+      ]
+    },
+    {
+      id: 'BY20260511-002', planName: '数控车床季度保养', deviceCode: 'DEV-SK-003', deviceName: '数控车床-003', deviceModel: 'CK6140', workshop: '机加车间',
+      urgency: '特急', status: 'accepted', reporter: '李师傅', reportTime: '2026-05-11 07:15',
+      assignee: '王建国', assignTime: '2026-05-11 07:45', startTime: null, completeTime: null, closeTime: null,
+      planStart: '2026-05-11 08:00', planEnd: '2026-05-11 18:00',
+      cancelPerson: null, cancelTime: null, cancelReason: '', remark: '',
+      items: [
+        { name: '主轴轴承润滑', part: '主轴箱', method: '更换润滑脂，检查轴承间隙', standard: '运转平稳无异响', status: 'pending', completeTime: null },
+        { name: '丝杠导轨保养', part: 'X/Z轴丝杠', method: '清洁导轨面，涂抹润滑脂', standard: '移动顺畅无爬行', status: 'pending', completeTime: null },
+        { name: '冷却系统清洗', part: '冷却水箱', method: '更换冷却液，清洗管路', standard: '流量正常无堵塞', status: 'pending', completeTime: null },
+        { name: '刀塔精度检查', part: '电动刀塔', method: '检查定位精度，调整间隙', standard: '定位误差<0.01mm', status: 'pending', completeTime: null },
+      ]
+    },
+    {
+      id: 'BY20260511-003', planName: '折弯机周保养', deviceCode: 'DEV-ZW-004', deviceName: '折弯机-002', deviceModel: 'WC67Y-100/3200', workshop: '钣金车间',
+      urgency: '紧急', status: 'started', reporter: '赵师傅', reportTime: '2026-05-11 06:00',
+      assignee: '李志强', assignTime: '2026-05-11 06:20', startTime: '2026-05-11 08:00', completeTime: null, closeTime: null,
+      planStart: '2026-05-11 08:00', planEnd: '2026-05-11 12:00',
+      cancelPerson: null, cancelTime: null, cancelReason: '', remark: '',
+      items: [
+        { name: '后挡料校准', part: '后挡料机构', method: '测量定位精度，微调螺丝', standard: '定位精度±0.05mm', status: 'completed', completeTime: '2026-05-11 09:00' },
+        { name: '模具表面清洁', part: '上模/下模', method: '清除铁屑油污，涂抹防锈油', standard: '表面光洁无锈蚀', status: 'pending', completeTime: null },
+      ]
+    },
+    {
+      id: 'BY20260510-004', planName: '焊接机器人月度保养', deviceCode: 'DEV-HJ-005', deviceName: '焊接机器人-001', deviceModel: 'IRB-2600', workshop: '焊接车间',
+      urgency: '紧急', status: 'completed', reporter: '孙师傅', reportTime: '2026-05-10 09:00',
+      assignee: '陈东明', assignTime: '2026-05-10 09:25', startTime: '2026-05-10 09:40', completeTime: '2026-05-10 14:30', closeTime: null,
+      planStart: '2026-05-10 10:00', planEnd: '2026-05-10 16:00',
+      cancelPerson: null, cancelTime: null, cancelReason: '', remark: '',
+      items: [
+        { name: '减速器换油', part: '各轴减速器', method: '更换RV减速器润滑油', standard: '油色清澈无金属粉', status: 'completed', completeTime: '2026-05-10 11:00' },
+        { name: '焊枪清理', part: '焊枪/导电嘴', method: '清理飞溅物，更换导电嘴', standard: '送丝顺畅电弧稳定', status: 'completed', completeTime: '2026-05-10 12:00' },
+        { name: '零点校准', part: '机器人本体', method: '校准各轴零点位置', standard: '各轴误差<0.1mm', status: 'completed', completeTime: '2026-05-10 14:00' },
+      ]
+    },
+    {
+      id: 'BY20260510-005', planName: '剪板机季度保养', deviceCode: 'DEV-ZW-008', deviceName: '剪板机-001', deviceModel: 'QC12Y-6x3200', workshop: '钣金车间',
+      urgency: '一般', status: 'closed', reporter: '周师傅', reportTime: '2026-05-10 08:00',
+      assignee: '赵铁军', assignTime: '2026-05-10 08:30', startTime: '2026-05-10 09:00', completeTime: '2026-05-10 15:00', closeTime: '2026-05-10 16:30',
+      planStart: '2026-05-10 09:00', planEnd: '2026-05-10 17:00',
+      cancelPerson: null, cancelTime: null, cancelReason: '', remark: '',
+      items: [
+        { name: '刀片间隙调整', part: '上下刀片', method: '测量间隙，调整楔形块', standard: '间隙均匀符合板材厚度', status: 'completed', completeTime: '2026-05-10 11:00' },
+        { name: '液压缸密封检查', part: '主液压缸', method: '检查密封件，更换老化密封', standard: '无泄漏压力稳定', status: 'completed', completeTime: '2026-05-10 15:00' },
+      ]
+    },
+    {
+      id: 'BY20260509-006', planName: '冲压机半年度保养', deviceCode: 'DEV-CY-002', deviceName: '冲压机-002', deviceModel: 'JH21-250', workshop: '冲压车间',
+      urgency: '一般', status: 'cancelled', reporter: '吴师傅', reportTime: '2026-05-09 10:00',
+      assignee: null, assignTime: null, startTime: null, completeTime: null, closeTime: null,
+      planStart: '2026-05-09 10:00', planEnd: '2026-05-09 18:00',
+      cancelPerson: 'admin', cancelTime: '2026-05-09 11:00', cancelReason: '设备临时停产，延期执行', remark: '预计下周重新排期',
+      items: [
+        { name: '离合器制动器检查', part: '离合器总成', method: '测量间隙，检查摩擦片厚度', standard: '间隙2-3mm摩擦片>3mm', status: 'pending', completeTime: null },
+        { name: '飞轮轴承检查', part: '飞轮', method: '检查轴承游隙，更换润滑脂', standard: '运转平稳无振动', status: 'pending', completeTime: null },
+      ]
+    },
+    {
+      id: 'BY20260511-007', planName: '数控铣床年度保养', deviceCode: 'DEV-SK-007', deviceName: '数控铣床-001', deviceModel: 'XK714', workshop: '机加车间',
+      urgency: '特急', status: 'reported', reporter: '郑师傅', reportTime: '2026-05-11 09:45',
+      assignee: null, assignTime: null, startTime: null, completeTime: null, closeTime: null,
+      planStart: '2026-05-11 10:00', planEnd: '2026-05-12 18:00',
+      cancelPerson: null, cancelTime: null, cancelReason: '', remark: '',
+      items: [
+        { name: '主轴精度检测', part: '主轴', method: '千分表检测径向/轴向跳动', standard: '径向<0.005mm轴向<0.003mm', status: 'pending', completeTime: null },
+        { name: '伺服电机保养', part: 'XYZ轴伺服电机', method: '清洁编码器，检查联轴器', standard: '无报警响应正常', status: 'pending', completeTime: null },
+      ]
+    },
+    {
+      id: 'BY20260511-008', planName: '冲压机003月度保养', deviceCode: 'DEV-CY-006', deviceName: '冲压机-003', deviceModel: 'JH21-315', workshop: '冲压车间',
+      urgency: '紧急', status: 'accepted', reporter: '钱师傅', reportTime: '2026-05-11 05:30',
+      assignee: '王建国', assignTime: '2026-05-11 06:00', startTime: null, completeTime: null, closeTime: null,
+      planStart: '2026-05-11 06:00', planEnd: '2026-05-11 14:00',
+      cancelPerson: null, cancelTime: null, cancelReason: '', remark: '',
+      items: [
+        { name: '导轨润滑保养', part: '导轨/滑块', method: '清洁导轨面，加注润滑油', standard: '油膜均匀移动顺畅', status: 'pending', completeTime: null },
+        { name: '模具导向检查', part: '导柱/导套', method: '检查配合间隙，测量磨损', standard: '间隙符合标准无松动', status: 'pending', completeTime: null },
+        { name: '安全装置检测', part: '光电保护/急停', method: '测试响应时间，检查接线', standard: '响应时间<15ms', status: 'pending', completeTime: null },
+      ]
+    },
+    {
+      id: 'BY20260510-009', planName: '折弯机002周保养', deviceCode: 'DEV-ZW-004', deviceName: '折弯机-002', deviceModel: 'WC67Y-100/3200', workshop: '钣金车间',
+      urgency: '一般', status: 'started', reporter: '冯师傅', reportTime: '2026-05-10 16:00',
+      assignee: '刘伟强', assignTime: '2026-05-10 16:30', startTime: '2026-05-11 08:00', completeTime: null, closeTime: null,
+      planStart: '2026-05-10 17:00', planEnd: '2026-05-11 12:00',
+      cancelPerson: null, cancelTime: null, cancelReason: '', remark: '',
+      items: [
+        { name: '液压油温检测', part: '液压泵站', method: '检测油温，清洗冷却器', standard: '油温<55°C', status: 'completed', completeTime: '2026-05-11 09:00' },
+        { name: '角度传感器校准', part: '角度传感器', method: '校准零点和量程', standard: '误差<0.1°', status: 'pending', completeTime: null },
+        { name: '模具清洁防锈', part: '上下模具', method: '清除铁屑，涂抹防锈油', standard: '表面光洁无锈蚀', status: 'pending', completeTime: null },
+      ]
+    },
+    {
+      id: 'BY20260510-010', planName: '焊接机器人001月度保养', deviceCode: 'DEV-HJ-005', deviceName: '焊接机器人-001', deviceModel: 'IRB-2600', workshop: '焊接车间',
+      urgency: '紧急', status: 'completed', reporter: '陈师傅', reportTime: '2026-05-10 11:00',
+      assignee: '陈东明', assignTime: '2026-05-10 11:20', startTime: '2026-05-10 11:30', completeTime: '2026-05-10 15:00', closeTime: null,
+      planStart: '2026-05-10 12:00', planEnd: '2026-05-10 16:00',
+      cancelPerson: null, cancelTime: null, cancelReason: '', remark: '',
+      items: [
+        { name: '送丝机构清理', part: '送丝轮/导管', method: '清理送丝轮，更换送丝管', standard: '送丝顺畅无卡顿', status: 'completed', completeTime: '2026-05-10 12:30' },
+        { name: '焊枪TCP校准', part: '焊枪', method: '重新标定工具中心点', standard: 'TCP精度<0.05mm', status: 'completed', completeTime: '2026-05-10 14:00' },
+      ]
+    },
+    {
+      id: 'BY20260509-011', planName: '剪板机001季度保养', deviceCode: 'DEV-ZW-008', deviceName: '剪板机-001', deviceModel: 'QC12Y-6x3200', workshop: '钣金车间',
+      urgency: '一般', status: 'closed', reporter: '褚师傅', reportTime: '2026-05-09 13:00',
+      assignee: '赵铁军', assignTime: '2026-05-09 13:30', startTime: '2026-05-09 14:00', completeTime: '2026-05-09 17:00', closeTime: '2026-05-09 18:00',
+      planStart: '2026-05-09 14:00', planEnd: '2026-05-09 18:00',
+      cancelPerson: null, cancelTime: null, cancelReason: '', remark: '',
+      items: [
+        { name: '刀片修磨', part: '上下刀片', method: '拆卸修磨，调整间隙', standard: '刃口锋利间隙均匀', status: 'completed', completeTime: '2026-05-09 16:00' },
+        { name: '压料缸检查', part: '压料缸', method: '检查密封，测试压力', standard: '压力稳定无泄漏', status: 'completed', completeTime: '2026-05-09 17:00' },
+        { name: '后挡料精度校准', part: '后挡料', method: '测量定位精度，微调', standard: '定位误差<0.1mm', status: 'completed', completeTime: '2026-05-09 18:00' },
+      ]
+    },
+    {
+      id: 'BY20260511-012', planName: '数控车床003季度保养', deviceCode: 'DEV-SK-003', deviceName: '数控车床-003', deviceModel: 'CK6140', workshop: '机加车间',
+      urgency: '特急', status: 'reported', reporter: '卫师傅', reportTime: '2026-05-11 10:00',
+      assignee: null, assignTime: null, startTime: null, completeTime: null, closeTime: null,
+      planStart: '2026-05-11 10:00', planEnd: '2026-05-12 18:00',
+      cancelPerson: null, cancelTime: null, cancelReason: '', remark: '',
+      items: [
+        { name: '尾座套筒检查', part: '尾座', method: '检查套筒磨损，润滑', standard: '移动顺畅无卡滞', status: 'pending', completeTime: null },
+        { name: '排屑器清理', part: '排屑器/水箱', method: '清理铁屑，更换切削液', standard: '排屑顺畅无堵塞', status: 'pending', completeTime: null },
+        { name: '防护门检测', part: '防护门/联锁', method: '检查联锁功能，润滑导轨', standard: '联锁可靠开合顺畅', status: 'pending', completeTime: null },
+      ]
+    },
+  ];
+}
+
+let records = genData();
+let filtered = [...records];
+let currentPage = 1, pageSize = 20, totalPages = 1;
+let currentId = null, selectedPerson = null;
+
+function nowStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+
+function formatDuration(ms) {
+  if (!ms || ms < 0) return '<span style="color:#bfbfbf">-</span>';
+  const mins = Math.floor(ms / 60000);
+  if (mins < 1) return '&lt;1分钟';
+  const h = Math.floor(mins / 60), m = mins % 60;
+  if (h === 0) return m + '分钟';
+  if (h < 24) return h + '小时' + (m > 0 ? m + '分' : '');
+  const d = Math.floor(h / 24), rh = h % 24;
+  return d + '天' + (rh > 0 ? rh + '小时' : '');
+}
+
+function calcDurations(r) {
+  const d = {};
+  if (r.reportTime && r.assignTime) d.response = new Date(r.assignTime) - new Date(r.reportTime);
+  else d.response = null;
+  if (r.startTime && r.completeTime) d.repair = new Date(r.completeTime) - new Date(r.startTime);
+  else d.repair = null;
+  if (r.completeTime && r.closeTime) d.close = new Date(r.closeTime) - new Date(r.completeTime);
+  else d.close = null;
+  return d;
+}
+
+function showToast(msg, type) {
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  const icon = type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-times-circle' : 'fa-exclamation-circle';
+  const color = type === 'success' ? '#52c41a' : type === 'error' ? '#f5222d' : '#fa8c16';
+  t.className = 'toast-item toast-' + type;
+  t.innerHTML = '<i class="fas ' + icon + '" style="color:' + color + '"></i> ' + msg;
+  c.appendChild(t); setTimeout(() => t.remove(), 2800);
+}
+
+function openModal(id) { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// ===== 统计 =====
+function updateStats() {
+  const c = { reported: 0, accepted: 0, started: 0, completed: 0, closed: 0, cancelled: 0 };
+  records.forEach(r => { c[r.status] = (c[r.status] || 0) + 1; });
+  document.getElementById('statReported').textContent = c.reported;
+  document.getElementById('statRepairing').textContent = c.accepted + c.started;
+  document.getElementById('statCompleted').textContent = c.completed;
+  document.getElementById('statTotal').textContent = records.length;
+}
+
+function filterByStatus(status) {
+  if (status === '') { resetFilter(); return; }
+  document.querySelectorAll('.stat-card').forEach(c => c.classList.toggle('active', c.dataset.status === status));
+  if (status === 'repairing') {
+    document.getElementById('filterStatus').value = '';
+    filtered = records.filter(r => r.status === 'accepted' || r.status === 'started');
+    currentPage = 1; renderTable(); return;
+  }
+  document.getElementById('filterStatus').value = status;
+  filtered = records.filter(r => r.status === status); currentPage = 1; renderTable();
+}
+
+// ===== 表格 =====
+function renderTable() {
+  const tbody = document.getElementById('tableBody');
+  const start = (currentPage - 1) * pageSize;
+  const pageData = filtered.slice(start, start + pageSize);
+  if (!pageData.length) { tbody.innerHTML = '<tr><td colspan="18"><div class="empty-state"><i class="fas fa-inbox"></i><p>暂无数据</p></div></td></tr>'; document.getElementById('totalCount').textContent = 0; renderPagination(0); return; }
+
+  tbody.innerHTML = pageData.map((r, i) => {
+    const st = STATUS_MAP[r.status];
+    const durs = calcDurations(r);
+    const urgClass = r.urgency === '特急' ? 'urgency-high' : r.urgency === '紧急' ? 'urgency-medium' : 'urgency-low';
+    const cancelCell = r.cancelReason ? '<span style="color:#f5222d;font-size:12px" title="' + r.cancelReason + '">' + (r.cancelReason.length > 12 ? r.cancelReason.substring(0,12) + '...' : r.cancelReason) + '</span>' : '<span style="color:#bfbfbf">-</span>';
+    let actions = '';
+    if (r.status === 'reported') {
+      actions = '<span class="operate-btn" onclick="openAssign(\'' + r.id + '\')"><i class="fas fa-user-plus"></i>指派</span><span class="operate-btn" onclick="openDetail(\'' + r.id + '\')"><i class="fas fa-eye"></i>查看</span>';
+    } else if (r.status === 'accepted') {
+      actions = '<span class="operate-btn operate-btn-warning" onclick="startRepair(\'' + r.id + '\')"><i class="fas fa-play"></i>开始</span><span class="operate-btn" onclick="openDetail(\'' + r.id + '\')"><i class="fas fa-eye"></i>查看</span>';
+    } else if (r.status === 'started') {
+      actions = '<span class="operate-btn operate-btn-success" onclick="completeRepair(\'' + r.id + '\')"><i class="fas fa-check"></i>完成</span><span class="operate-btn" onclick="openDetail(\'' + r.id + '\')"><i class="fas fa-eye"></i>查看</span>';
+    } else if (r.status === 'completed') {
+      actions = '<span class="operate-btn" onclick="openClose(\'' + r.id + '\')"><i class="fas fa-boxes"></i>关闭</span><span class="operate-btn" onclick="openDetail(\'' + r.id + '\')"><i class="fas fa-eye"></i>查看</span>';
+    } else {
+      actions = '<span class="operate-btn" onclick="openDetail(\'' + r.id + '\')"><i class="fas fa-eye"></i>查看</span>';
+    }
+    return '<tr><td><input type="checkbox" class="row-check" data-id="' + r.id + '"></td><td style="color:#8c8c8c">' + (start+i+1) + '</td><td><span class="col-mono">' + r.id + '</span></td><td class="col-wrap"><div class="col-plan-name">' + r.planName + '</div><div class="col-plan-desc">' + r.items.length + ' 项保养</div></td><td class="col-wrap"><div class="col-device-name">' + r.deviceName + '</div><div class="col-device-code">' + r.deviceCode + '</div></td><td><span class="urgency-tag ' + urgClass + '"><span class="urgency-dot"></span>' + r.urgency + '</span></td><td><span class="status-tag ' + st.class + '"><i class="fas ' + st.icon + '" style="font-size:9px"></i> ' + st.label + '</span></td><td>' + r.reporter + '</td><td>' + (r.assignee || '<span style="color:#bfbfbf">未指派</span>') + '</td><td>' + r.items.length + '</td><td class="col-time">' + r.reportTime.split(' ')[0] + '<br><span style="color:#bfbfbf">' + r.reportTime.split(' ')[1] + '</span></td><td class="col-duration">' + (durs.response !== null ? formatDuration(durs.response) : '<span style="color:#bfbfbf">-</span>') + '</td><td class="col-duration">' + (durs.repair !== null ? formatDuration(durs.repair) : '<span style="color:#bfbfbf">-</span>') + '</td><td class="col-duration">' + (durs.close !== null ? formatDuration(durs.close) : '<span style="color:#bfbfbf">-</span>') + '</td><td>' + (r.cancelPerson || '<span style="color:#bfbfbf">-</span>') + '</td><td class="col-time">' + (r.cancelTime || '<span style="color:#bfbfbf">-</span>') + '</td><td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + cancelCell + '</td><td style="text-align:center">' + actions + '</td></tr>';
+  }).join('');
+  document.getElementById('totalCount').textContent = filtered.length;
+  renderPagination(filtered.length);
+}
+
+function renderPagination(total) {
+  totalPages = Math.max(1, Math.ceil(total / pageSize));
+  if (currentPage > totalPages) currentPage = totalPages;
+  let h = '<button class="pagination-btn" onclick="goPage(1)" title="首页"><i class="fas fa-angle-double-left" style="font-size:11px"></i></button>';
+  h += '<button class="pagination-btn" onclick="goPage(currentPage-1)" title="上一页"><i class="fas fa-angle-left" style="font-size:11px"></i></button>';
+  for (let i = 1; i <= totalPages; i++) { if (i===1||i===totalPages||(i>=currentPage-2&&i<=currentPage+2)) { h+='<button class="pagination-btn '+(i===currentPage?'active':'')+'" onclick="goPage('+i+')">'+i+'</button>'; } else if (i===currentPage-3||i===currentPage+3) { h+='<span style="color:#bfbfbf;padding:0 4px">...</span>'; } }
+  h += '<button class="pagination-btn" onclick="goPage(currentPage+1)" title="下一页"><i class="fas fa-angle-right" style="font-size:11px"></i></button>';
+  h += '<button class="pagination-btn" onclick="goPage(totalPages)" title="末页"><i class="fas fa-angle-double-right" style="font-size:11px"></i></button>';
+  document.getElementById('pageNumbers').innerHTML = h;
+}
+function goPage(p) { if (p<1||p>totalPages) return; currentPage=p; renderTable(); }
+function changePageSize() { pageSize=parseInt(document.getElementById('pageSize').value); currentPage=1; renderTable(); }
+function jumpToPage() { const v=parseInt(document.getElementById('jumpPage').value); if(v>=1&&v<=totalPages) goPage(v); document.getElementById('jumpPage').value=''; }
+function toggleSelectAll() { const c=document.getElementById('selectAll').checked; document.querySelectorAll('.row-check').forEach(x=>x.checked=c); }
+
+function applyFilter() {
+  const kw=document.getElementById('filterKeyword').value.trim().toLowerCase();
+  const st=document.getElementById('filterStatus').value;
+  const df=document.getElementById('filterDateFrom').value;
+  const dt=document.getElementById('filterDateTo').value;
+  filtered=records.filter(r=>{
+    if(kw && !r.id.toLowerCase().includes(kw) && !r.planName.toLowerCase().includes(kw) && !r.deviceCode.toLowerCase().includes(kw) && !r.deviceName.toLowerCase().includes(kw)) return false;
+    if(st && r.status!==st) return false;
+    if(df && r.reportTime<df+' 00:00') return false;
+    if(dt && r.reportTime>dt+' 23:59') return false;
+    return true;
+  });
+  currentPage=1; renderTable();
+}
+function resetFilter() {
+  document.getElementById('filterKeyword').value='';
+  document.getElementById('filterStatus').value='';
+  document.getElementById('filterDateFrom').value='';
+  document.getElementById('filterDateTo').value='';
+  document.querySelectorAll('.stat-card').forEach(c=>c.classList.remove('active'));
+  filtered=[...records]; currentPage=1; renderTable();
+}
+function exportData() { showToast('数据导出成功（演示功能）', 'success'); }
+
+// ===== 新增 =====
+function openNewModal() {
+  const sel=document.getElementById('newDevice');
+  sel.innerHTML='<option value="">请选择设备</option>'+devices.map(d=>'<option value="'+d.code+'">'+d.name+' ('+d.code+')</option>').join('');
+  document.getElementById('newDeviceCode').value='';
+  document.getElementById('newDeviceModel').value='';
+  document.getElementById('newWorkshop').value='';
+  document.getElementById('newPlanName').value='';
+  document.getElementById('newPlanStart').value='';
+  document.getElementById('newPlanEnd').value='';
+  document.getElementById('newUrgency').value='紧急';
+  document.getElementById('newRemark').value='';
+  initItemTable();
+  openModal('newModal');
+}
+function onDeviceChange() {
+  const code=document.getElementById('newDevice').value;
+  const dev=devices.find(d=>d.code===code);
+  if(dev){document.getElementById('newDeviceCode').value=dev.code; document.getElementById('newDeviceModel').value=dev.model; document.getElementById('newWorkshop').value=dev.workshop;}
+}
+function itemRowHtml(idx,item) {
+  return '<tr><td><input type="text" placeholder="保养名称" value="'+(item?item.name:'')+'"></td><td><input type="text" placeholder="保养部位" value="'+(item?item.part:'')+'"></td><td><input type="text" placeholder="保养方法" value="'+(item?item.method:'')+'"></td><td><input type="text" placeholder="结果标准" value="'+(item?item.standard:'')+'"></td><td><button class="btn-remove-item" onclick="this.closest(\'tr\').remove()"><i class="fas fa-trash-alt"></i></button></td></tr>';
+}
+function initItemTable() { const t=document.getElementById('newItemTableBody'); t.innerHTML=''; for(let i=0;i<3;i++) t.innerHTML+=itemRowHtml(i); }
+function addItemRow() { document.getElementById('newItemTableBody').innerHTML+=itemRowHtml(Date.now()); }
+function collectItems(tbodyId) {
+  const rows=document.querySelectorAll('#'+tbodyId+' tr'); const items=[];
+  rows.forEach(row=>{const inputs=row.querySelectorAll('input'); const name=inputs[0].value.trim(),part=inputs[1].value.trim(),method=inputs[2].value.trim(),standard=inputs[3].value.trim(); if(name) items.push({name,part,method,standard,status:'pending',completeTime:null});});
+  return items;
+}
+
+function submitNew() {
+  const deviceCode=document.getElementById('newDevice').value;
+  const planName=document.getElementById('newPlanName').value.trim();
+  const planStart=document.getElementById('newPlanStart').value;
+  const planEnd=document.getElementById('newPlanEnd').value;
+  if(!deviceCode){showToast('请选择设备','error');return;}
+  if(!planName){showToast('请输入保养计划名称','error');return;}
+  if(!planStart){showToast('请输入计划开始时间','error');return;}
+  if(!planEnd){showToast('请输入计划完成时间','error');return;}
+  const items=collectItems('newItemTableBody');
+  if(items.length===0){showToast('请至少添加一项保养项目','error');return;}
+  const dev=devices.find(d=>d.code===deviceCode);
+  const now=new Date();
+  const id='BY'+now.getFullYear()+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0')+'-'+String(Math.floor(Math.random()*900)+100).padStart(3,'0');
+  records.unshift({id,planName,deviceCode:dev.code,deviceName:dev.name,deviceModel:dev.model,workshop:dev.workshop,urgency:document.getElementById('newUrgency').value,status:'reported',reporter:document.getElementById('newReporter').value,reportTime:nowStr(),assignee:null,assignTime:null,startTime:null,completeTime:null,closeTime:null,planStart:planStart.replace('T',' '),planEnd:planEnd.replace('T',' '),cancelPerson:null,cancelTime:null,cancelReason:'',items,remark:document.getElementById('newRemark').value.trim()});
+  closeModal('newModal'); updateStats(); applyFilter(); showToast('保养计划已创建');
+}
+
+// ===== 指派 =====
+function openAssign(id) {
+  currentId=id; document.getElementById('assignOrderNo').textContent=id;
+  document.getElementById('personSearch').value=''; selectedPerson=null;
+  renderPersonList(persons); openModal('assignModal');
+}
+function renderPersonList(list) {
+  const el=document.getElementById('personList');
+  if(!list.length){el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:30px;color:#bfbfbf;font-size:13px"><i class="fas fa-search" style="font-size:24px;margin-bottom:8px;display:block"></i>未找到</div>';return;}
+  el.innerHTML=list.map(p=>'<div class="person-item" data-id="'+p.id+'" onclick="selectPerson(this,\''+p.id+'\')"><div class="person-avatar">'+p.name.charAt(0)+'</div><div class="person-info"><div class="person-name">'+p.name+'</div><div class="person-role">'+p.role+' &middot; '+p.skills+'</div></div><div class="person-check"><i class="fas fa-check-circle"></i></div></div>').join('');
+}
+function selectPerson(el,id){document.querySelectorAll('.person-item').forEach(i=>i.classList.remove('selected'));el.classList.add('selected');selectedPerson=persons.find(p=>p.id===id);}
+function filterPersons(){const kw=document.getElementById('personSearch').value.trim().toLowerCase();if(!kw){renderPersonList(persons);return;}renderPersonList(persons.filter(p=>p.name.toLowerCase().includes(kw)||p.role.toLowerCase().includes(kw)||p.skills.toLowerCase().includes(kw)));}
+function confirmAssign() {
+  if(!selectedPerson){showToast('请选择保养人员','error');return;}
+  const r=records.find(x=>x.id===currentId);
+  if(r){r.assignee=selectedPerson.name;r.assignTime=nowStr();r.status='accepted';closeModal('assignModal');updateStats();applyFilter();showToast('已指派 '+selectedPerson.name+'，进入已接单状态');}
+}
+
+// ===== 开始/完成/关闭 =====
+function startRepair(id) {
+  currentId=id; const r=records.find(x=>x.id===id);
+  showConfirm('开始保养','确认开始保养「'+r.deviceName+'」？系统将记录开始时间并计算保养时长。','fa-play-circle','#722ed1',()=>{
+    const rec=records.find(x=>x.id===currentId);
+    if(rec){rec.startTime=nowStr();rec.status='started';closeModal('confirmModal');updateStats();applyFilter();showToast('保养已开始');}
+  });
+}
+function completeRepair(id) {
+  currentId=id; const r=records.find(x=>x.id===id);
+  showConfirm('完成保养','确认「'+r.deviceName+'」的保养已完成？完成后需录入备件信息方可关闭保养单。','fa-check-circle','#52c41a',()=>{
+    const rec=records.find(x=>x.id===currentId);
+    if(rec){rec.completeTime=nowStr();rec.status='completed';closeModal('confirmModal');updateStats();applyFilter();showToast('保养已完成，请尽快录入备件并关闭保养单');}
+  });
+}
+function openClose(id) { currentId=id; const r=records.find(x=>x.id===id); document.getElementById('closeOrderNo').textContent=r.id; document.getElementById('closeSummary').value=r.repairSummary||''; initSpareTable(); openModal('closeModal'); }
+function spareRowHtml(idx,s) {
+  return '<tr><td><input type="text" placeholder="备件名称" value="'+(s?s.name:'')+'"></td><td><input type="text" placeholder="规格型号" value="'+(s?s.spec:'')+'"></td><td><input type="number" placeholder="数量" min="1" value="'+(s?s.qty:'')+'"></td><td><button class="btn-remove-item" onclick="this.closest(\'tr\').remove()"><i class="fas fa-trash-alt"></i></button></td></tr>';
+}
+function initSpareTable() { const t=document.getElementById('spareTableBody'); t.innerHTML=''; for(let i=0;i<2;i++) t.innerHTML+=spareRowHtml(i); }
+function addSpareRow() { document.getElementById('spareTableBody').innerHTML+=spareRowHtml(Date.now()); }
+function collectSpares() {
+  const rows=document.querySelectorAll('#spareTableBody tr'); const parts=[];
+  rows.forEach(row=>{const inputs=row.querySelectorAll('input'); const name=inputs[0].value.trim(),spec=inputs[1].value.trim(),qty=parseInt(inputs[2].value)||0; if(name) parts.push({name,spec,qty,price:0});});
+  return parts;
+}
+function confirmCloseOrder() {
+  const r=records.find(x=>x.id===currentId); if(!r) return;
+  const summary=document.getElementById('closeSummary').value.trim();
+  const parts=collectSpares();
+  r.repairSummary=summary; r.spareParts=parts; r.closeTime=nowStr(); r.status='closed';
+  closeModal('closeModal'); updateStats(); applyFilter(); showToast('保养单已关闭，备件信息已保存');
+}
+
+// ===== 详情 =====
+function openDetail(id) {
+  const r=records.find(x=>x.id===id);
+  const st=STATUS_MAP[r.status];
+  const durs=calcDurations(r);
+  let itemsHtml=r.items.map((it,idx)=>'<tr><td>'+(idx+1)+'</td><td style="font-weight:500">'+it.name+'</td><td>'+it.part+'</td><td>'+it.method+'</td><td>'+it.standard+'</td></tr>').join('');
+
+  document.getElementById('detailContent').innerHTML=
+    '<div style="display:flex;gap:20px">'+
+      '<div style="flex:1">'+
+        '<div class="detail-section">'+
+          '<div class="detail-section-title"><i class="fas fa-cog"></i> 设备信息</div>'+
+          '<div class="detail-grid">'+
+            '<div class="detail-item"><span class="detail-label">设备名称</span><span class="detail-value">'+r.deviceName+'</span></div>'+
+            '<div class="detail-item"><span class="detail-label">设备编号</span><span class="detail-value mono">'+r.deviceCode+'</span></div>'+
+            '<div class="detail-item"><span class="detail-label">设备型号</span><span class="detail-value">'+r.deviceModel+'</span></div>'+
+            '<div class="detail-item"><span class="detail-label">所在车间</span><span class="detail-value">'+r.workshop+'</span></div>'+
+          '</div>'+
+        '</div>'+
+        '<div class="detail-section">'+
+          '<div class="detail-section-title"><i class="fas fa-file-alt"></i> 保养信息</div>'+
+          '<div class="detail-grid">'+
+            '<div class="detail-item"><span class="detail-label">保养单号</span><span class="detail-value mono">'+r.id+'</span></div>'+
+            '<div class="detail-item"><span class="detail-label">当前状态</span><span class="detail-value"><span class="status-tag '+st.class+'">'+st.label+'</span></span></div>'+
+            '<div class="detail-item"><span class="detail-label">保养计划</span><span class="detail-value">'+r.planName+'</span></div>'+
+            '<div class="detail-item"><span class="detail-label">紧急程度</span><span class="detail-value" style="color:'+(r.urgency==='特急'?'#f5222d':r.urgency==='紧急'?'#fa8c16':'#52c41a')+'">'+r.urgency+'</span></div>'+
+            '<div class="detail-item"><span class="detail-label">创建人</span><span class="detail-value">'+r.reporter+'</span></div>'+
+            '<div class="detail-item"><span class="detail-label">创建时间</span><span class="detail-value">'+r.reportTime+'</span></div>'+
+            '<div class="detail-item"><span class="detail-label">计划开始</span><span class="detail-value">'+r.planStart+'</span></div>'+
+            '<div class="detail-item"><span class="detail-label">计划完成</span><span class="detail-value">'+r.planEnd+'</span></div>'+
+          '</div>'+
+        '</div>'+
+        (r.remark?'<div class="detail-section"><div class="detail-section-title"><i class="fas fa-sticky-note"></i> 备注</div><div style="font-size:13px;color:#595959;line-height:1.7;background:#fafafa;padding:10px 12px;border-radius:6px">'+r.remark+'</div></div>':'')+
+      '</div>'+
+      '<div style="width:200px;flex-shrink:0">'+
+        '<div class="detail-section">'+
+          '<div class="detail-section-title"><i class="fas fa-stopwatch"></i> 时效统计</div>'+
+          '<div style="display:flex;flex-direction:column;gap:8px">'+
+            '<div style="background:#fff7e6;padding:10px 12px;border-radius:6px"><div style="font-size:12px;color:#fa8c16">响应时长</div><div style="font-size:16px;font-weight:700;color:#fa8c16;margin-top:2px">'+(durs.response!==null?formatDuration(durs.response):'<span style="font-size:12px;font-weight:400;color:#bfbfbf">未接单</span>')+'</div></div>'+
+            '<div style="background:#e6f7ff;padding:10px 12px;border-radius:6px"><div style="font-size:12px;color:#1890ff">保养时长</div><div style="font-size:16px;font-weight:700;color:#1890ff;margin-top:2px">'+(durs.repair!==null?formatDuration(durs.repair):'<span style="font-size:12px;font-weight:400;color:#bfbfbf">未完成</span>')+'</div></div>'+
+            '<div style="background:#f6ffed;padding:10px 12px;border-radius:6px"><div style="font-size:12px;color:#52c41a">关闭时长</div><div style="font-size:16px;font-weight:700;color:#52c41a;margin-top:2px">'+(durs.close!==null?formatDuration(durs.close):'<span style="font-size:12px;font-weight:400;color:#bfbfbf">未关闭</span>')+'</div></div>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="detail-section" style="margin-top:8px">'+
+      '<div class="detail-section-title"><i class="fas fa-clipboard-list"></i> 保养项目明细</div>'+
+      '<table class="item-table" style="margin:0">'+
+        '<thead><tr><th style="width:40px">#</th><th style="width:22%">保养名称</th><th style="width:18%">保养部位</th><th style="width:35%">保养方法</th><th style="width:25%">保养结果标准</th></tr></thead>'+
+        '<tbody>'+itemsHtml+'</tbody>'+
+      '</table>'+
+    '</div>';
+
+  let footer='<button class="btn-modal-default" onclick="closeModal(\'detailModal\')">关闭</button>';
+  if(r.status==='reported') footer+='<button class="btn-modal-primary" onclick="closeModal(\'detailModal\');openAssign(\''+r.id+'\')">指派人员</button>';
+  else if(r.status==='accepted') footer+='<button class="btn-modal-primary" style="background:#722ed1" onclick="closeModal(\'detailModal\');startRepair(\''+r.id+'\')">开始保养</button>';
+  else if(r.status==='started') footer+='<button class="btn-modal-success" onclick="closeModal(\'detailModal\');completeRepair(\''+r.id+'\')">完成保养</button>';
+  else if(r.status==='completed') footer+='<button class="btn-modal-primary" onclick="closeModal(\'detailModal\');openClose(\''+r.id+'\')">录入备件关闭</button>';
+  document.getElementById('detailFooter').innerHTML=footer;
+  openModal('detailModal');
+}
+
+function showConfirm(title,desc,icon,color,cb) {
+  document.getElementById('confirmIcon').className='fas '+icon; document.getElementById('confirmIcon').style.color=color;
+  document.getElementById('confirmTitle').textContent=title; document.getElementById('confirmDesc').textContent=desc;
+  document.getElementById('confirmBtn').onclick=cb; document.getElementById('confirmBtn').style.background=color;
+  openModal('confirmModal');
+}
+
+document.addEventListener('DOMContentLoaded',()=>{updateStats();filtered=[...records];renderTable();document.getElementById('filterDateFrom').value='2026-05-01';document.getElementById('filterDateTo').value='2026-05-11';});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-overlay.show').forEach(m=>m.classList.remove('show'));});</script>
+</body>
+</html>
